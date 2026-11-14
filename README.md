@@ -2,6 +2,30 @@
 
 A complete beginner learning app for U.S. stock and ETF options. The course contains 64 short lessons, 8 module checkpoints with 2 quiz forms, daily recall reviews, notes, an educational expiration-payoff chart and a reference library. Default study time is 15 minutes. Course completion does not establish trading profitability.
 
+## Advanced Academy
+
+Open **Advanced academy** in the classroom navigation. The advanced program brings the 26-module curriculum into the app with teaching sections, original staged decision cases, portfolio mandates, exhibits, submission examples, analytic rubrics, assignments, defense prompts, and primary references. Module 10 is the flagship Trade Design seminar. Beginner and advanced module numbers identify separate pathways.
+
+The learning loop is: prepare → make an initial recommendation → save the initial submission → consider new information → revise → compare with the debrief → practice on a changed case → return for a later check. Numeric checks are server-graded practice. Written submissions are preserved for rubric review; saving writing does not automatically grade its reasoning or certify mastery. Generated practice variants exercise known question families and do not constitute an independently administered unseen examination. The program has not yet been validated in a learner pilot.
+
+Advanced records use separate user-scoped D1 tables. Every save appends an immutable draft/submission revision and the course packet it used. Unique owner/module/revision indexes prevent competing tabs from silently replacing work. Practice stores the response, expected result, explanation and question version, with a unique owner/module/sequence key preventing replayed submissions. The advanced evidence JSON export includes historical course snapshots. These records are separate from beginner JSON/CSV exports.
+
+The laboratories cover equal-budget portfolio comparisons, European theoretical prices and sensitivities, a short-leg assignment ledger and a supplied partial-fill/cancellation episode. Inputs and episodes are fictional teaching assumptions. Model prices, local sensitivities, expiration values and supplied fills have distinct meanings. All labs provide readable tables and explanations.
+
+The canonical advanced teaching source is `content/graduate.json`. Source changes require incrementing `GRADUATE_VERSION` in `lib/graduate.ts`; changes to question interpretation or key logic also require incrementing `GRADUATE_QUESTION_VERSION`. Existing records preserve their prior versions. `content:import` renders the full advanced Markdown download and inserts it into the library and offline ZIP. The ordinary source freshness check detects stale rendered copies.
+
+Advanced API contracts:
+
+| Route | Behavior |
+| --- | --- |
+| GET /api/graduate | Read only the current learner's submission history and numeric practice |
+| PUT /api/graduate | Append a draft or submitted revision with optimistic concurrency checking |
+| GET /api/graduate/practice?moduleId=10 | Request the next module-specific numeric practice variant without answer keys |
+| POST /api/graduate/practice | Validate, independently derive answers, and atomically save feedback |
+| GET /api/graduate/export | Export the learner's advanced evidence and historical content packets |
+
+Run `node --experimental-strip-types tests/graduate-api.integration.mjs` against a local authenticated development service after applying migrations. It exercises isolation, immutable first attempts, concurrent requests, validation, answer-key handling and exports, then restores portable test records. Run this separately from other tests that write the portable learner's records.
+
 ## Application design
 
 | Layer | Technology | Purpose |
@@ -33,11 +57,12 @@ npm test
 npm run build
 ```
 
-The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs both migrations; an existing database that already has migration 0000 needs only 0001:
+The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs all three migrations. Apply only the migrations not already present in an existing local database:
 
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_loving_thanos.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_modern_firestar.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_regular_karen_page.sql
 npm run dev -- --port 5173
 ```
 

@@ -6,6 +6,24 @@ const root = resolve(app, '..');
 const checkOnly = process.argv.includes('--check');
 if (process.argv.slice(2).some(argument => argument !== '--check')) throw new Error('Use import-course.mjs with no arguments or --check.');
 const staleFiles = [];
+// The advanced teaching packages are authored and versioned with the app.
+const graduate = JSON.parse(readFileSync(resolve(app, 'content/graduate.json'), 'utf8'));
+if (graduate.length !== 26 || graduate.some((module, index) => module.id !== index + 1)) throw new Error('The advanced pathway requires 26 ordered teaching packages.');
+const graduateMarkdown = '# Advanced Options Academy\n\nCase seminars, analytical practice, and defended portfolio decisions. All case data are fictional unless explicitly sourced.\n\n' + graduate.map(module => [
+  `## Module ${module.id}: ${module.title}`, module.objective,
+  `Stage: ${module.stage}. Study allocation: ${module.duration}. Prerequisites: ${module.prerequisites.join(', ') || 'Foundation diagnostic'}.`,
+  ...module.sections.map(section => `### ${section.title}\n\n${section.body}`),
+  `### Case: ${module.caseStudy.title}`, module.caseStudy.brief, module.caseStudy.exhibits,
+  `### Initial decision\n\n${module.caseStudy.decisionPrompt}`,
+  `### New information — commit your first decision before reading\n\n${module.caseStudy.update}`,
+  `### Defense\n\n${module.caseStudy.defense.map(prompt => `- ${prompt}`).join('\n')}`,
+  `### Debrief — attempt the case first\n\n${module.caseStudy.debrief}`,
+  ...module.caseStudy.samples.map(sample => `### ${sample.level} submission\n\n${sample.body}`),
+  `### Rubric\n\n${module.caseStudy.rubric.map(row => `- **${row.dimension}:** ${row.excellent}`).join('\n')}`,
+  `### Assignment\n\n${module.assignment.prompt}\n\n${module.assignment.deliverables.map(item => `- ${item}`).join('\n')}`,
+  `### Later transfer questions\n\n${module.reviewQuestions.map(prompt => `- ${prompt}`).join('\n')}`,
+  `### Primary references\n\n${module.sources.map(source => `- [${source.title}](${source.url})`).join('\n')}`,
+].join('\n\n')).join('\n\n');
 function emit(destination, value) {
   const expected = Buffer.isBuffer(value) ? value : Buffer.from(value, 'utf8');
   if (checkOnly) {
@@ -67,6 +85,11 @@ const library = resources.map(file => {
   const raw = readFileSync(resolve(root,file),'utf8');
   return {file,title:raw.split('\n')[0].replace(/^#\s*/,''),body:normalizeLinks(raw,file)};
 });
+library.push({file:'GRADUATE_COURSE.md', title:'Advanced Options Academy — complete teaching packages', body:graduateMarkdown});
+// A standalone download has no neighboring course files; the ZIP keeps those
+// relative links because it supplies the referenced documents at its root.
+const standaloneGraduate = graduateMarkdown.replace(/\[([^\]]+)\]\((?!https?:|#)([^)\n]+\.md(?:#[^)\n]*)?)\)/g, '$1 (course-library reference: $2)');
+emit(resolve(app,'public/downloads/advanced-course.md'), standaloneGraduate);
 emit(resolve(app,'content/course.json'),JSON.stringify(modules,null,2)+'\n');
 emit(resolve(app,'content/library.json'),JSON.stringify(library,null,2)+'\n');
 
@@ -122,6 +145,7 @@ function teachingZip(files,overrides) {
   return Buffer.concat([...locals,...centrals,end]);
 }
 const archiveOverrides=new Map([
+  ['GRADUATE_COURSE.md',Buffer.from(graduateMarkdown,'utf8')],
   ['DOWNLOAD_README.md',Buffer.from('# Your offline options course\n\nStart with [the beginner course](beginner/README.md). This package contains 64 small lessons, review aids, reference chapters, Python teaching scripts and synthetic lab data. No brokerage account is needed.\n\nMY_LEARNING_RECORD.md is a newly generated blank template. The existing personal learning record, completion history, notes, accounts and application databases are not included.\n\nThe browser application source and dependencies are not included. [Application note](course-app/README.md) explains that boundary. Root documents may describe the app or link to its source checkout; use the course Markdown directly for offline study.\n\nFor Python practice, see [the teaching labs](labs/README.md). All supplied market data are synthetic unless a document explicitly says otherwise.\n','utf8')],
   ['MY_LEARNING_RECORD.md',Buffer.from('# Blank learning record for the offline course\n\nThis is a newly generated blank template. It contains no prior learner answers, progress or personal information. For daily beginner work, start with [the workbook](beginner/WORKBOOK.md). The optional extended template follows.\n\n'+readFileSync(resolve(root,'LEARNING_RECORD_TEMPLATE.md'),'utf8'),'utf8')],
   ['course-app/README.md',Buffer.from('# Browser application note\n\nThis offline download contains teaching material and Python labs. It does not contain the frontend/backend application source, its dependencies, runtime files, or any user database.\n\nTo study without the app, open [the beginner course](../beginner/README.md). To run the browser app, use the separate source checkout and its course-app/README.md setup instructions, or a hosted link supplied separately. Commands for the app require that full source checkout; they do not run from this teaching-only package.\n','utf8')],

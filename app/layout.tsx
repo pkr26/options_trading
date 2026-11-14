@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://options-academy-pradeep.giftedpage.chatgpt.site"),
   title: "First Principles — Your options learning journey",
-  description: "Learn options from the very beginning. Small lessons, thoughtful practice, and a clear path at your pace.",
+  description: "Learn options from first principles through advanced case seminars, interactive laboratories, portfolio decisions, research, and a defended capstone.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

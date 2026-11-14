@@ -100,6 +100,8 @@ test('the offline ZIP contains only teaching files and omits personal records an
       assert.match(bytes.toString('utf8'),/browser application source and dependencies are not included/);
     } else if(name==='course-app/README.md') {
       assert.match(bytes.toString('utf8'),/does not contain the frontend\/backend application source/);
+    } else if(name==='GRADUATE_COURSE.md') {
+      assert.equal(bytes.toString('utf8'),library.find(item=>item.file==='GRADUATE_COURSE.md').body,'advanced offline teaching matches the in-app complete course');
     } else assert.deepEqual(bytes,readFileSync(resolve(root,name)),`${name}: ZIP bytes differ from course`);
     cursor+=46+nameSize+extraSize+commentSize;
   }

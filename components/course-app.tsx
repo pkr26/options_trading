@@ -6,13 +6,15 @@ import { lessons, modules } from "@/lib/course";
 import type { LearningState, Lesson, Quiz, QuizResult } from "@/lib/types";
 import Markdown from "./markdown";
 import PayoffLab from "./payoff-lab";
+import GraduateCourse from "./graduate-course";
 
-type View = "overview"|"course"|"lesson"|"checkpoint"|"review"|"notebook"|"practice"|"resources"|"settings";
+type View = "overview"|"course"|"lesson"|"checkpoint"|"review"|"notebook"|"practice"|"resources"|"settings"|"graduate";
 type Resource = { file: string; title: string; body?: string };
 type Notice = { text: string; kind: "error"|"success"; auth?: boolean; retry?: () => void; retryLabel?: string };
 const navigation = [
   {id:"overview",label:"My learning",icon:LayoutDashboard},
   {id:"course",label:"The course",icon:BookOpen},
+  {id:"graduate",label:"Advanced academy",icon:GraduationCap},
   {id:"review",label:"Review & remember",icon:RefreshCw},
   {id:"notebook",label:"My notebook",icon:NotebookPen},
   {id:"practice",label:"Practice lab",icon:FlaskConical},
@@ -52,6 +54,8 @@ function ProgressRing({percent,size=74}:{percent:number;size?:number}) {
 
 export default function CourseApp({initialName=""}:{initialName?:string}) {
   const [view,setView]=useState<View>("overview");
+  const [graduateOpened,setGraduateOpened]=useState(false);
+  const [navigationReady,setNavigationReady]=useState(false);
   const [data,setData]=useState<LearningState|null>(null);
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState("");
@@ -78,6 +82,12 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const timezone=timezoneDraft??data?.profile.timezone??"America/Phoenix";
   const [now,setNow]=useState(0);
   const activeResource=useRef<string|null>(null);
+  useEffect(()=>{
+    const restoreAdvanced=()=>{if(window.location.hash.startsWith("#advanced/")){setGraduateOpened(true);setView("graduate");}};
+    queueMicrotask(()=>{setNavigationReady(true);restoreAdvanced();});
+    window.addEventListener("hashchange",restoreAdvanced);
+    return()=>window.removeEventListener("hashchange",restoreAdvanced);
+  },[]);
 
   const showError=useCallback((error:unknown,retry?:()=>void,retryLabel="Retry")=>{
     const e=error as Error&{status?:number};
@@ -137,9 +147,11 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const canComplete=(lesson:Lesson)=>!!data&&(lesson.id===1||completed.has(lesson.id-1))&&(lesson.id===modules.find(m=>m.id===lesson.moduleId)?.lessons[0].id?(lesson.moduleId===1||passed.has(lesson.moduleId-1)):true);
   const focusContent=()=>window.requestAnimationFrame(()=>document.getElementById("main-content")?.focus({preventScroll:true}));
   const closeResource=()=>{activeResource.current=null;setSelectedResource(null);setResourceLoading(false);};
-  const go=(next:View)=>{activeResource.current=null;setNow(Date.now());setView(next);setMobileOpen(false);setNotice(null);if(next!=="course")setSearch("");if(next==="resources")closeResource();window.scrollTo({top:0,behavior:"smooth"});focusContent();};
-  const openLesson=(id:number)=>{activeResource.current=null;setSelectedId(id);setLessonTried(false);setView("lesson");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();};
+  const clearAdvancedHash=()=>{if(window.location.hash.startsWith("#advanced/"))window.history.replaceState(null,"",window.location.pathname+window.location.search);};
+  const go=(next:View)=>{if(next==="graduate")setGraduateOpened(true);else clearAdvancedHash();activeResource.current=null;setNow(Date.now());setView(next);setMobileOpen(false);setNotice(null);if(next!=="course")setSearch("");if(next==="resources")closeResource();window.scrollTo({top:0,behavior:"smooth"});focusContent();};
+  const openLesson=(id:number)=>{clearAdvancedHash();activeResource.current=null;setSelectedId(id);setLessonTried(false);setView("lesson");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();};
   const openResource=(file:string)=>{
+    clearAdvancedHash();
     activeResource.current=file;setSelectedResource(file);setView("resources");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();
     if(library.some(resource=>resource.file===file&&resource.body!==undefined)){setResourceLoading(false);return;}
     async function load(){
@@ -200,9 +212,9 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
     {mobileOpen&&<button className="sidebar-scrim" aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>}
     <aside className={`sidebar ${mobileOpen?"sidebar-open":""}`} aria-label="Main navigation">
       <button className="brand" onClick={()=>go("overview")} aria-label="First Principles home"><span className="brand-mark"><span>f</span><i/></span><span>first principles<small>OPTIONS, FROM ZERO.</small></span></button>
-      <div className="sidebar-course"><span className="sidebar-course-icon"><Leaf size={16}/></span><div><strong>The beginner journey</strong><span>Your space to learn</span></div><ChevronDown size={14}/></div>
+      <div className="sidebar-course"><span className="sidebar-course-icon"><Leaf size={16}/></span><div><strong>Options Academy</strong><span>Foundations to advanced study</span></div><ChevronDown size={14}/></div>
       <p className="nav-caption">YOUR CLASSROOM</p>
-      <nav>{navigation.map(item=><button key={item.id} className={`nav-item ${activeNavigation===item.id?"active":""}`} onClick={()=>go(item.id)} aria-current={activeNavigation===item.id?"page":undefined}><item.icon size={18}/><span>{item.label}</span>{item.id==="review"&&due.length>0&&<span className="nav-count">{due.length}</span>}</button>)}</nav>
+      <nav aria-busy={!navigationReady}>{navigation.map(item=><button key={item.id} disabled={!navigationReady} className={`nav-item ${activeNavigation===item.id?"active":""}`} onClick={()=>go(item.id)} aria-current={activeNavigation===item.id?"page":undefined}><item.icon size={18}/><span>{item.label}</span>{item.id==="review"&&due.length>0&&<span className="nav-count">{due.length}</span>}</button>)}</nav>
       <div className="sidebar-bottom"><div className="gentle-card"><span className="gentle-icon"><Sprout size={22}/></span><strong>Small steps. Strong foundations.</strong><p>Understanding comes before trading. You&apos;re right where you need to be.</p></div><button className={`nav-item ${view==="settings"?"active":""}`} onClick={()=>go("settings")}><Settings2 size={18}/><span>Learning preferences</span></button><div className="sidebar-person"><span className="avatar">{initials}</span><div><strong>{firstName||"Your learning space"}</strong><span>{data?"Personal learning account":"Ready when you are"}</span></div>{!data&&<a href="/signin-with-chatgpt?return_to=%2F" target="_top" className="sign-in-link">Sign in</a>}</div></div>
     </aside>
 
@@ -222,8 +234,11 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
             const Icon=moduleIcons[(module.id-1)%moduleIcons.length];const count=module.lessons.filter(l=>completed.has(l.id)).length;const active=nextLesson?.moduleId===module.id;
             return <button className={`module-card ${active?"module-card-current":""}`} key={module.id} onClick={()=>{setExpandedModule(module.id);go("course");}}><div className="module-card-top"><span className={`module-icon module-color-${module.id%4}`}><Icon size={21}/></span><span className="module-status">{passed.has(module.id)?<><Check size={12}/>Complete</>:active?"UP NEXT":`CHAPTER ${num(module.id)}`}</span></div><h3>{shortTitle(module.title)}</h3><p>{descriptionFor(module.id)}</p><div className="module-card-bottom"><span>{module.lessons.length} little lessons</span><span>{count>0?`${count}/${module.lessons.length}`:<ArrowUpIndicator/>}</span></div>{count>0&&<div className="module-mini-track"><span style={{width:`${count/module.lessons.length*100}%`}}/></div>}</button>;
           })}</div>
+          <div className="bottom-guide"><div className="guide-icon"><GraduationCap size={23}/></div><div><strong>Continue into the Advanced Academy.</strong><p>26 case seminars, interactive laboratories, portfolio decisions, and an evidence portfolio.</p></div><button className="text-button" onClick={()=>go("graduate")}>Explore advanced study<ArrowRight size={14}/></button></div>
           <div className="bottom-guide"><div className="guide-icon"><ShieldCheck size={23}/></div><div><strong>Learn the “why” before the “buy.”</strong><p>This is a learning space. No signals, profit promises, or real-money orders.</p></div><button className="text-button" onClick={()=>openResource("VERIFICATION_REPORT.md")}>How this course was checked<ArrowRight size={14}/></button></div>
         </>}
+
+        {graduateOpened&&<div hidden={view!=="graduate"}><GraduateCourse onResource={openResource}/></div>}
 
         {view==="course"&&<>
           <div className="page-heading"><div><p className="eyebrow">YOUR BEGINNER JOURNEY</p><h1>The course, one idea at a time.</h1><p>{lessons.length} small lessons. {modules.length} checkpoints. A foundation you can explain.</p></div><div className="course-progress-label"><ProgressRing percent={percent} size={52}/><span>{completed.size} lessons<br/><strong>completed</strong></span></div></div>

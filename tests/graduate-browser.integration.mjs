@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+import { chromium, expect } from '@playwright/test';
+const base=new URL(process.env.LOCAL_API_BASE??'http://127.0.0.1:5173');
+assert.ok(['127.0.0.1','localhost','[::1]'].includes(base.hostname));
+const owner='local_seedy',tables=['graduate_submissions','graduate_practice'];
+const value=v=>v===null?'NULL':typeof v==='number'?String(v):`CAST(X'${Buffer.from(String(v)).toString('hex')}' AS TEXT)`;
+function sql(statement){return JSON.parse(execFileSync(process.execPath,['--import','./scripts/sites-env.mjs','./node_modules/wrangler/bin/wrangler.js','d1','execute','DB','--local','--config','dist/server/wrangler.json','--persist-to','.wrangler/state','--command',statement,'--json'],{encoding:'utf8',maxBuffer:8*1024*1024}))[0].results;}
+const snapshot=Object.fromEntries(tables.map(table=>[table,sql(`SELECT * FROM ${table} WHERE user_id=${value(owner)}`)]));
+mkdirSync('outputs/advanced-qa',{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ for(const table of tables)sql(`DELETE FROM ${table} WHERE user_id=${value(owner)}`);
+ await page.goto(new URL('/signin-with-chatgpt?return_to=/',base).href);
+ await expect(page.getByRole('heading',{name:'Welcome, Seedy.'})).toBeVisible();
+ await page.getByRole('button',{name:'Advanced academy',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Learn to make a defensible decision.'})).toBeVisible();
+ assert.equal(await page.locator('.graduate-module-card').count(),26);
+ await page.screenshot({path:'outputs/advanced-qa/program-desktop.png'});
+ await page.getByRole('button',{name:'Enter the Trade Design classroom'}).click();
+ await page.getByRole('button',{name:'Apply this in the case studio'}).click();
+ const initial='I recommend comparing a protective collar with reducing concentration, using the same initial resources and mandate.';
+ await page.getByLabel('Your initial recommendation',{exact:false}).fill(initial);
+ await page.getByLabel('Analysis and supporting calculations',{exact:false}).fill('Reconcile $110,000 starting wealth, fees, conservative quote sides, each terminal outcome, and the remaining cash balance.');
+ await page.getByLabel('Risks and uncertainty',{exact:false}).fill('Cash liquidity, assignment, missing information, costs, and the mandate may change the feasible alternatives.');
+ await page.getByRole('button',{name:'Commit initial answer & reveal update'}).click();
+ await expect(page.getByLabel('Your response to the update',{exact:false})).toBeVisible();
+ await page.getByLabel('Your response to the update',{exact:false}).fill('The immediate cash requirement rules out the specified full hedge. Recalculate alternatives and retain the original memo.');
+ await page.getByRole('button',{name:'Submit this revision',exact:true}).click();
+ await expect(page.locator('.graduate-writing .outlined-tag')).toHaveText('Saved revision 2');
+ await page.reload();
+ await expect(page.getByLabel('Your initial recommendation',{exact:false})).toHaveValue(initial);
+ await page.getByRole('button',{name:'Open update for my saved case'}).click();
+ await expect(page.getByLabel('Your response to the update',{exact:false})).toHaveValue(/immediate cash requirement/);
+ await page.screenshot({path:'outputs/advanced-qa/case-desktop.png'});
+ await page.getByRole('button',{name:'Fresh practice',exact:true}).click();
+ await page.getByRole('button',{name:'Start a fresh practice set'}).click();
+ await expect(page.locator('.graduate-practice-question')).toHaveCount(3);
+ for(const input of await page.locator('.graduate-practice-question input').all())await input.fill('0');
+ await page.getByRole('button',{name:'Check and save my answers'}).click();
+ await expect(page.locator('.graduate-practice-result')).toContainText('calculations correct');
+ await page.getByRole('button',{name:'My evidence',exact:true}).click();
+ await expect(page.locator('.graduate-mistakes details')).toHaveCount(3);
+ assert.equal(sql(`SELECT COUNT(*) AS n FROM graduate_submissions WHERE user_id=${value(owner)}`)[0].n,2);
+ assert.equal(sql(`SELECT COUNT(*) AS n FROM graduate_practice WHERE user_id=${value(owner)}`)[0].n,1);
+ await page.getByRole('button',{name:'Scenario labs',exact:true}).click();
+ await page.screenshot({path:'outputs/advanced-qa/labs-desktop.png'});
+ await page.setViewportSize({width:390,height:844});
+ await expect.poll(()=>page.locator('.sidebar').evaluate(element=>Math.round(element.getBoundingClientRect().right))).toBe(0);
+ await page.screenshot({path:'outputs/advanced-qa/labs-mobile.png'});
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile lab should not overflow viewport');
+ await page.getByRole('button',{name:'Program',exact:true}).click();
+ await page.screenshot({path:'outputs/advanced-qa/program-mobile.png'});
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile program should not overflow viewport');
+ assert.deepEqual(errors,[]);
+ console.log('Advanced browser journey passed: 26 modules, case commitment, revision, reload, practice feedback, evidence, mobile layout.');
+}finally{
+ await browser.close();
+ for(const table of tables){sql(`DELETE FROM ${table} WHERE user_id=${value(owner)}`);for(const row of snapshot[table])sql(`INSERT INTO ${table} (${Object.keys(row).join(',')}) VALUES (${Object.values(row).map(value).join(',')})`);}
+ console.log('Portable advanced records restored.');
+}

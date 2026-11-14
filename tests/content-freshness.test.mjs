@@ -19,6 +19,8 @@ test('the freshness check detects changed lessons and attachments without repair
     }
     for(const directory of ['beginner','labs','scripts']) cpSync(resolve(root,directory),resolve(fixture,directory),{recursive:true});
     copyFileSync(resolve(app,'README.md'),resolve(isolatedApp,'README.md'));
+    mkdirSync(resolve(isolatedApp,'content'),{recursive:true});
+    copyFileSync(resolve(app,'content/graduate.json'),resolve(isolatedApp,'content/graduate.json'));
     const script=resolve(isolatedApp,'scripts/import-course.mjs');
     copyFileSync(resolve(app,'scripts/import-course.mjs'),script);
     execFileSync(process.execPath,[script],{cwd:isolatedApp,stdio:'pipe'});
