@@ -2,17 +2,18 @@ import type { CompetencyId, GraduatePracticeFeedback, GraduatePracticeQuestion }
 import { europeanPrice } from "./graduate-models.ts";
 
 type KeyedQuestion = GraduatePracticeQuestion & { expected: number; explanation: string; tolerance: number };
+export const GRADUATE_GRADING_CONVENTION={countTolerance:1e-9,numericTolerance:0.00501} as const;
 const money = (n: number) => n.toFixed(2);
 function questions(moduleId: number, sequence: number): KeyedQuestion[] {
   if (!Number.isInteger(moduleId) || moduleId < 1 || moduleId > 26 || !Number.isSafeInteger(sequence) || sequence < 0 || sequence > 1_000_000) throw new RangeError("Choose a valid module and practice sequence.");
   const x = sequence % 97, n = 1 + sequence % 4, k = 40 + x, premium = 2 + x / 20, fees = 1 + sequence % 3, up = sequence % 2 === 0;
   const price = k + (up ? 8 : -6), rows: KeyedQuestion[] = [];
   const add = (skill: CompetencyId, prompt: string, expected: number, explanation: string, unit = "USD", hint = "Write the units beside every term before calculating.") => {
-    rows.push({ id: `g${moduleId}-s${sequence}-q${rows.length + 1}`, skill, prompt: `${prompt} ${unit === "count" ? "Enter a whole number." : "Round the final answer to two decimal places; keep intermediate precision."}`, unit, hint, expected, explanation, tolerance: unit === "count" ? 1e-9 : 0.00501 });
+    rows.push({ id: `g${moduleId}-s${sequence}-q${rows.length + 1}`, skill, prompt: `${prompt} ${unit === "count" ? "Enter a whole number." : "Round the final answer to two decimal places; keep intermediate precision."}`, unit, hint, expected, explanation, tolerance: unit === "count" ? GRADUATE_GRADING_CONVENTION.countTolerance : GRADUATE_GRADING_CONVENTION.numericTolerance });
   };
   switch (moduleId) {
     case 1: {
-      add("risk", `A fictional account rises from $${k * 100} to $${price * 100}. What is its signed simple return in percent?`, (price / k - 1) * 100, `(Final − initial) / initial × 100. A negative result is a loss.`, "percent");
+      add("risk", `A fictional account changes from $${k * 100} to $${price * 100}. What is its signed simple return in percent?`, (price / k - 1) * 100, `(Final − initial) / initial × 100. A negative result is a loss.`, "percent");
       const drawdown = 10 + sequence % 50;
       add("risk", `An account falls ${drawdown}% from its peak. What percentage gain from the remaining value restores the peak?`, drawdown / (100 - drawdown) * 100, `Recovery gain is drawdown / (100 − drawdown) × 100, using the smaller remaining balance.`, "percent");
       add("valuation", `A $${k * 100} balance earns a stipulated 5% in each of two years, with no additions. What is the final balance?`, k * 100 * 1.05 ** 2, `Multiply the starting balance by 1.05 twice. This is arithmetic under a stated return, not a forecast.`);
@@ -26,7 +27,7 @@ function questions(moduleId: number, sequence: number): KeyedQuestion[] {
     case 3: {
       const right = up ? "call" : "put", intrinsic = up ? Math.max(price - k, 0) : Math.max(k - price, 0);
       add("contracts", `One long standard ${right}, strike $${k}, cost $${money(premium)}/share. Stock expires at $${price}. Fees total $${fees}. What is the signed expiration P&L?`, intrinsic * 100 - premium * 100 - fees, `Intrinsic value is $${intrinsic}/share. Subtract the premium and whole-position fee after multiplying intrinsic and premium by 100.`);
-      add("contracts", `The same ${right} has intrinsic value $${intrinsic}/share and a coherent quoted premium $${money(intrinsic + premium)}. What is extrinsic value per share?`, premium, `Premium minus intrinsic value = $${money(premium)}/share. It is a value decomposition, not profit.`, "USD/share");
+      add("contracts", `In a separate before-expiration snapshot, a ${right} has intrinsic value $${intrinsic}/share and a coherent quoted premium $${money(intrinsic + premium)}. What is extrinsic value per share?`, premium, `Premium minus intrinsic value = $${money(premium)}/share. It is a value decomposition, not profit.`, "USD/share");
       add("contracts", `For a long standard ${right} with strike $${k} and premium $${money(premium)}, what is the expiration break-even stock price? Ignore fees.`, up ? k + premium : k - premium, `Call break-even adds premium to strike; put break-even subtracts it. This is an expiration relation.`, "USD/share");
       break;
     }

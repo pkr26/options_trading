@@ -64,6 +64,8 @@ test("European prices match published standard benchmark numbers and put-call pa
   assert.equal(europeanPrice({ ...p, spot: 0, right: "call" }), 0);
   assert.ok(Math.abs(europeanPrice({ ...p, volatility: 0 }) - (100 - 100 * Math.exp(-0.05))) < 1e-10);
   assert.throws(() => europeanPrice({ ...p, volatility: NaN }));
+  assert.ok(Object.values(europeanSensitivities({...p,volatility:5})).every(Number.isFinite),"maximum supported volatility has a bounded vega difference");
+  assert.ok(Object.values(europeanSensitivities({...p,spot:1e7})).every(Number.isFinite),"maximum supported spot uses backward differences");
   assert.ok(Math.abs(normalCdf(0) - 0.5) < 1e-8);
   for (const invalid of [NaN, Infinity, -Infinity]) assert.throws(() => normalCdf(invalid));
 });

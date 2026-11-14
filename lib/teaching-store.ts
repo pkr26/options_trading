@@ -5,7 +5,7 @@ import { ApiError, withoutUserId } from "./api";
 import type { TeachingEvidence } from "./teaching-types";
 
 type Db=ReturnType<typeof getDb>;
-export const TEACHING_VERSION="2026-11-14.2";
+export const TEACHING_VERSION="2026-11-14.3";
 export async function latestTeachingEvent(db:Db,userId:string,kind:TeachingEvidence["kind"],entityId:string){
   const [row]=await db.select().from(teachingEvents).where(and(eq(teachingEvents.userId,userId),eq(teachingEvents.kind,kind),eq(teachingEvents.entityId,entityId))).orderBy(desc(teachingEvents.revision)).limit(1);
   return row;

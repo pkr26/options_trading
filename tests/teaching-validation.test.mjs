@@ -10,6 +10,8 @@ test('teaching mutations reject forged progress, cross-user fields and unsafe ar
  assert.equal(artifactInput.parse(artifact).kind,'protocol');
  for(const sourceUrl of ['javascript:alert(1)','http://example.com','file:///private/key'])assert.throws(()=>artifactInput.parse({...artifact,sourceUrl}));
  assert.throws(()=>pilotInput.parse({action:'enroll',moduleIds:[4,4,14]}));
+ assert.throws(()=>pilotInput.parse({action:'enroll',moduleIds:[4,10,14],consent:false,priorExperience:'basic'}));
+ assert.equal(pilotInput.parse({action:'enroll',moduleIds:[4,10,14],consent:true,priorExperience:'basic'}).consent,true);
  assert.throws(()=>pilotInput.parse({action:'submit',stage:'day7',expectedRevision:1,answers:{},minutes:5,clarity:3,completedAt:'2020-01-01'}));
  assert.throws(()=>reviewInput.parse({verifiedExpert:true}));
 });

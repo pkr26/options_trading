@@ -24,8 +24,18 @@ export function europeanPrice(p: EuropeanInputs): number {
 export function europeanSensitivities(p: EuropeanInputs) {
   const h = Math.min(0.01, p.spot / 2);
   if (!(h > 0) || p.years <= 0 || p.volatility < 0.0001) throw new RangeError("Sensitivities require positive spot, time and volatility.");
-  const base = europeanPrice(p), up = europeanPrice({ ...p, spot: p.spot + h }), down = europeanPrice({ ...p, spot: p.spot - h });
-  return { price: base, delta: (up - down) / (2 * h), gamma: (up - 2 * base + down) / (h * h), vega: (europeanPrice({ ...p, volatility: p.volatility + 0.0001 }) - europeanPrice({ ...p, volatility: p.volatility - 0.0001 })) / 0.0002 / 100, theta: europeanPrice({ ...p, years: Math.max(0, p.years - 1 / 365) }) - base };
+  const base = europeanPrice(p), down = europeanPrice({ ...p, spot: p.spot - h });
+  let delta:number,gamma:number;
+  if(p.spot+h>1e7){
+    const downTwice=europeanPrice({...p,spot:p.spot-2*h});
+    delta=(3*base-4*down+downTwice)/(2*h);
+    gamma=(base-2*down+downTwice)/(h*h);
+  }else{
+    const up=europeanPrice({...p,spot:p.spot+h});
+    delta=(up-down)/(2*h);gamma=(up-2*base+down)/(h*h);
+  }
+  const volUp=Math.min(5,p.volatility+0.0001),volDown=Math.max(0,p.volatility-0.0001);
+  return { price: base, delta, gamma, vega: (europeanPrice({ ...p, volatility: volUp }) - europeanPrice({ ...p, volatility: volDown })) / (volUp-volDown) / 100, theta: europeanPrice({ ...p, years: Math.max(0, p.years - 1 / 365) }) - base };
 }
 export type StrategyInputs = { initialStock: number; finalStock: number; budget: number; putStrike: number; putPremium: number; callStrike: number; callPremium: number; fees: number };
 export function strategyComparison(p: StrategyInputs) {

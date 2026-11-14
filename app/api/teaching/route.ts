@@ -1,4 +1,4 @@
-import { and,desc,eq,getTableColumns,max } from "drizzle-orm";
+import { and,or,desc,eq,getTableColumns,max } from "drizzle-orm";
 import { identity,json,failure,withoutUserId } from "@/lib/api";
 import { graduatePractice,graduateSubmissions,teachingEvents } from "@/db/schema";
 import { buildTutorPlan } from "@/lib/adaptive-teaching";
@@ -9,7 +9,7 @@ export async function GET(){
     const {user,db}=await identity();
     const current=db.select({kind:teachingEvents.kind,entityId:teachingEvents.entityId,revision:max(teachingEvents.revision).as("last_revision")}).from(teachingEvents).where(eq(teachingEvents.userId,user.userId)).groupBy(teachingEvents.kind,teachingEvents.entityId).as("current_evidence");
     const [events,submissions,practice]=await Promise.all([
-      db.select({...getTableColumns(teachingEvents)}).from(teachingEvents).innerJoin(current,and(eq(teachingEvents.kind,current.kind),eq(teachingEvents.entityId,current.entityId),eq(teachingEvents.revision,current.revision))).where(eq(teachingEvents.userId,user.userId)).orderBy(desc(teachingEvents.createdAt),desc(teachingEvents.revision)),
+      db.select({...getTableColumns(teachingEvents)}).from(teachingEvents).innerJoin(current,and(eq(teachingEvents.kind,current.kind),eq(teachingEvents.entityId,current.entityId))).where(and(eq(teachingEvents.userId,user.userId),or(eq(teachingEvents.kind,"review"),eq(teachingEvents.revision,current.revision)))).orderBy(desc(teachingEvents.createdAt),desc(teachingEvents.revision)),
       db.select().from(graduateSubmissions).where(eq(graduateSubmissions.userId,user.userId)),
       db.select().from(graduatePractice).where(eq(graduatePractice.userId,user.userId)),
     ]);

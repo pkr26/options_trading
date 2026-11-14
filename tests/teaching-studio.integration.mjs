@@ -71,13 +71,13 @@ try{
  await page.getByLabel('The reviewer’s challenge',{exact:true}).fill('Explain whether the updated mandate changes the cash obligations.');
  await page.getByLabel('The learner’s response',{exact:true}).fill('I will reconcile the cash flows and preserve the first decision before revising.');
  await page.getByRole('checkbox',{name:/I am recording a review/}).check();await page.getByRole('button',{name:'Save recorded review'}).click();
- await expect(page.locator('.teaching-review-history')).toContainText('Self-review');assert.equal(reviewReceived.reviewerRole,'self');assert.equal(reviewReceived.criteria.length,4);
+ await expect(page.locator('.teaching-review-history').filter({has:page.getByRole('heading',{name:'Recorded reviews',exact:true})})).toContainText('Self-review');assert.equal(reviewReceived.reviewerRole,'self');assert.equal(reviewReceived.criteria.length,4);
  results.review='A real-review declaration and exact rubric/evidence are recorded with self-review provenance.';
  await page.getByRole('button',{name:'Learning pilot',exact:true}).click();
  await expect(page.locator('.teaching-pilot-results')).toContainText('No pilot results');
- await page.getByRole('button',{name:'Enroll in the learning pilot'}).click();await page.getByRole('button',{name:'Open baseline',exact:true}).click();
+ await page.getByLabel('Prior options experience',{exact:true}).selectOption('basic');await page.getByLabel(/I agree to this private learning pilot/).check();await page.getByRole('button',{name:'Enroll in the learning pilot'}).click();await page.getByRole('button',{name:'Open baseline',exact:true}).click();
  for(const [i,value]of[200,200,2].entries())await page.getByLabel(new RegExp(`Pilot answer ${i+1} `)).fill(String(value));
- await page.getByLabel('Actual assessment minutes',{exact:true}).fill('8');await page.getByRole('button',{name:'Submit the observed assessment'}).click();
+ await page.getByLabel('Actual assessment minutes',{exact:true}).fill('8');await page.getByLabel('Confidence in these answers (%)',{exact:true}).fill('60');await page.getByLabel('Assistance used for this assessment',{exact:true}).selectOption('none');await page.getByRole('button',{name:'Submit the observed assessment'}).click();
  await expect(page.locator('.teaching-pilot-results table')).toContainText('3/3');await expect(page.getByRole('button',{name:'Open day 7 check',exact:true})).toHaveCount(0);
  results.pilot='Only observed baseline results appear; scheduled retention stages remain unavailable early.';
  await page.getByRole('button',{name:'Adaptive tutor',exact:true}).click();await page.reload();

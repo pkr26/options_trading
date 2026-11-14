@@ -158,6 +158,24 @@ const archiveFiles=[
   ...archiveOverrides.keys(),
 ].sort();
 emit(resolve(app,'public/downloads/options-course.zip'),teachingZip(archiveFiles,archiveOverrides));
+// Facilitator-controlled packets separate the initial decision from the update.
+// The learner download never contains folded instructor solutions.
+const pilotSource=readFileSync(resolve(root,'PILOT_PARALLEL_CASES.md'),'utf8');
+const sharedPilot=pilotSource.split('## Shared arithmetic conventions\n')[1]?.split('## Form A')[0]?.trim();
+if(!sharedPilot)throw new Error('The written pilot needs shared contract conventions.');
+const participantFiles=new Map();
+for(const match of pilotSource.matchAll(/^## Form ([A-D]) — ([^\n]+)\n([\s\S]*?)(?=^## Form |^## Calculation validation)/gm)){
+  const [,letter,title,body]=match;
+  const withoutKey=body.replace(/<details>[\s\S]*?<\/details>/gi,'');
+  const parts=withoutKey.split(/^### Update[^\n]*\n/m);
+  if(parts.length!==2)throw new Error(`Form ${letter} needs a separate initial and update packet.`);
+  participantFiles.set(`FORM_${letter}_INITIAL.md`,Buffer.from(`# Form ${letter}: ${title} — initial packet\n\nFictional teaching data. Save your initial recommendation, calculations and uncertainty before requesting the separate update. Record prior exposure and any assistance; this public blueprint is not automatically an unseen assessment.\n\n## Contract and accounting conventions\n\n${sharedPilot}\n\n${parts[0].trim()}\n`));
+  participantFiles.set(`FORM_${letter}_UPDATE.md`,Buffer.from(`# Form ${letter}: ${title} — update packet\n\nRelease only after the initial response has been saved. Preserve it, then write and defend a separate revision.\n\n${parts[1].trim()}\n`));
+}
+if(participantFiles.size!==8)throw new Error('The written pilot requires four initial packets and four updates.');
+emit(resolve(app,'public/downloads/pilot-participant-forms.zip'),teachingZip([...participantFiles.keys()].sort(),participantFiles));
+const reviewGuide=['EXTERNAL_REVIEW_PACKET.md','PILOT_RATING_AND_REPORT_TEMPLATE.md','GRADUATE_TEACHING_STANDARD.md'].map(file=>readFileSync(resolve(root,file),'utf8')).join('\n\n---\n\n').replace(/\[([^\]]+)\]\((?!https?:|#)([^)\n]+\.md(?:#[^)\n]*)?)\)/g,'$1 (included course reference: $2)');
+emit(resolve(app,'public/downloads/validation-guide.md'),reviewGuide);
 if (checkOnly) {
   if (staleFiles.length) {
     console.error(`Teaching outputs differ from their sources:\n${staleFiles.map(file => `  ${file}`).join('\n')}\nRun npm run content:import, review the changes, then check again.`);

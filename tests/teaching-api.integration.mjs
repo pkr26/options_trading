@@ -45,13 +45,15 @@ try{
  status(await call('/api/teaching/review','POST',{...review,criteria:review.criteria.map(c=>({...c,evidence:'invented quotation that is absent'}))}),400);
  status(await call('/api/teaching/review','POST',{...review,decision:'accepted'}),400);
  status(await call('/api/teaching/review','POST',review),201);
- status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,4,14]}),400);
- let pilot=status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,10,14]}),201).pilot;assert.equal(pilot.revision,1);assert.deepEqual(pilot.enrollment.results,[]);
- status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,10,14]}),409);
+ status(await call('/api/teaching/review','POST',{...review,reviewerName:'Recorded reviewer example',reviewerRole:'reported_external'}),201);
+ status(await call('/api/teaching/review','POST',{...review,reviewerName:'Second reviewer example',reviewerRole:'reported_external'}),201);
+ status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,4,14],consent:true,priorExperience:'basic'}),400);
+ let pilot=status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,10,14],consent:true,priorExperience:'basic'}),201).pilot;assert.equal(pilot.revision,1);assert.deepEqual(pilot.enrollment.results,[]);assert.ok(pilot.enrollment.blueprintSignature);assert.equal(pilot.enrollment.priorExperience,'basic');assert.equal(pilot.enrollment.priorExposure.tutorSessions,1);
+ status(await call('/api/teaching/pilot','POST',{action:'enroll',moduleIds:[4,10,14],consent:true,priorExperience:'basic'}),409);
  status(await call('/api/teaching/pilot?stage=day7'),409);
  const form=status(await call('/api/teaching/pilot?stage=baseline'),200);assert.equal(form.questions.length,9);assert.ok(form.questions.every(q=>!('expected' in q)));
- const pilotBody={action:'submit',stage:'baseline',expectedRevision:1,answers:Object.fromEntries(form.questions.map(q=>[q.id,0])),minutes:7,clarity:3};
- pilot=status(await call('/api/teaching/pilot','POST',pilotBody),201).pilot;assert.equal(pilot.enrollment.results.length,1);assert.equal(pilot.revision,2);assert.equal(pilot.schedule.find(s=>s.stage==='day7').status,'scheduled');
+ const pilotBody={action:'submit',stage:'baseline',expectedRevision:1,answers:Object.fromEntries(form.questions.map(q=>[q.id,0])),minutes:7,clarity:3,confidence:40,assistance:'notes'};
+ pilot=status(await call('/api/teaching/pilot','POST',pilotBody),201).pilot;assert.equal(pilot.enrollment.results.length,1);assert.equal(pilot.enrollment.results[0].confidence,40);assert.equal(pilot.enrollment.results[0].assistance,'notes');assert.equal(pilot.revision,2);assert.equal(pilot.schedule.find(s=>s.stage==='day7').status,'scheduled');
  status(await call('/api/teaching/pilot','POST',pilotBody),409);
  status(await call('/api/teaching/pilot?stage=day30'),409);
  const artifactBody={expectedRevision:0,kind:'protocol',title:'Frozen hypothesis',body:'I specify a falsifiable hypothesis, benchmark, data fields, execution costs and failure criteria.',sourceUrl:'https://www.optionseducation.org/'};
@@ -59,7 +61,7 @@ try{
  let artifact=status(await call('/api/teaching/artifact','POST',artifactBody),201).event;
  const artifactId=artifact.entityId;artifact=status(await call('/api/teaching/artifact','POST',{...artifactBody,artifactId,expectedRevision:1,body:artifactBody.body+' This revision adds a trial log.'}),201).event;assert.equal(artifact.revision,2);
  status(await call('/api/teaching/artifact','POST',{...artifactBody,artifactId,expectedRevision:1}),409);
- const state=status(await call('/api/teaching'),200);assert.ok(!JSON.stringify(state).includes('PEER REVIEW'));assert.ok(state.events.some(e=>e.kind==='tutor'));assert.ok(state.events.some(e=>e.kind==='review'));
+ const state=status(await call('/api/teaching'),200);assert.ok(!JSON.stringify(state).includes('PEER REVIEW'));assert.ok(state.events.some(e=>e.kind==='tutor'));assert.equal(state.events.filter(e=>e.kind==='review').length,3);
  const exported=status(await call('/api/teaching/export'),200);assert.ok(exported.events.length>=state.events.length);assert.ok(exported.events.some(event=>event.kind==='tutor'&&event.revision===1));assert.ok(!JSON.stringify(exported).includes(peer));
  console.log(`${checks} teaching API checks passed: adaptive branching, race protection, exact-submission feedback, quoted review evidence, real-date pilot, capstone revisions and isolation.`);
 }finally{

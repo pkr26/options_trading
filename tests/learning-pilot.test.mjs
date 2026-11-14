@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pilotView,pilotQuestions,completePilot} from '../lib/learning-pilot.ts';
-const enrollment={id:'pilot',moduleIds:[4,10,14],version:'v1',enrolledAt:'2026-01-01T12:00:00Z',baselineAt:null,seed:0,results:[]};
+import {pilotView,pilotQuestions,completePilot,freezePilotBlueprint} from '../lib/learning-pilot.ts';
+const enrollment=freezePilotBlueprint({id:'pilot',moduleIds:[4,10,14],version:'v1',enrolledAt:'2026-01-01T12:00:00Z',baselineAt:null,seed:0,results:[]});
 const answerSet=questions=>Object.fromEntries(questions.map(question=>[question.id,0]));
 test('pilot has no invented starting result and seals baseline before retention checks',()=>{
  const start=pilotView(enrollment,1,'2026-01-01T12:00:00Z');
@@ -25,4 +25,15 @@ test('pilot rejects forged, missing and invalid observations',()=>{
  for(const changed of [{...answers,extra:0},{...answers,[questions[0].id]:Infinity},{}])assert.throws(()=>completePilot(enrollment,'baseline',changed,5,3,'2026-01-01T12:00:00Z'));
  for(const [minutes,clarity]of[[0,3],[-1,3],[5,0],[5,6],[NaN,3]])assert.throws(()=>completePilot(enrollment,'baseline',answers,minutes,clarity,'2026-01-01T12:00:00Z'));
  assert.equal(pilotView(null).enrollment,null);
+});
+
+test('a frozen pilot rejects unsupported question versions and changed blueprints',()=>{
+ assert.ok(enrollment.blueprintSignature);
+ assert.throws(()=>pilotQuestions({...enrollment,questionVersion:'future'},'baseline','2026-01-01T12:00:00Z'),/unsupported or changed/);
+ assert.throws(()=>pilotQuestions({...enrollment,blueprintSignature:'altered'},'baseline','2026-01-01T12:00:00Z'),/unsupported or changed/);
+ assert.throws(()=>pilotQuestions({...enrollment,seed:enrollment.seed+1},'baseline','2026-01-01T12:00:00Z'),/unsupported or changed/);
+ const questions=pilotQuestions(enrollment,'baseline','2026-01-01T12:00:00Z');
+ const done=completePilot(enrollment,'baseline',answerSet(questions),5,3,'2026-01-01T12:00:00Z',{confidence:40,assistance:'notes'});
+ assert.equal(done.results[0].confidence,40);assert.equal(done.results[0].assistance,'notes');
+ assert.throws(()=>freezePilotBlueprint(done),/cannot be refrozen/);
 });

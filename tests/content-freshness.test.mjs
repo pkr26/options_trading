@@ -25,7 +25,7 @@ test('the freshness check detects changed lessons and attachments without repair
     copyFileSync(resolve(app,'scripts/import-course.mjs'),script);
     execFileSync(process.execPath,[script],{cwd:isolatedApp,stdio:'pipe'});
     execFileSync(process.execPath,[script,'--check'],{cwd:isolatedApp,stdio:'pipe'});
-    const generated=['content/course.json','content/library.json','public/labs/options_lab.py','public/downloads/options-course.zip'];
+    const generated=['content/course.json','content/library.json','public/labs/options_lab.py','public/downloads/options-course.zip','public/downloads/pilot-participant-forms.zip','public/downloads/validation-guide.md'];
     const before=new Map(generated.map(file=>[file,readFileSync(resolve(isolatedApp,file))]));
     appendFileSync(resolve(fixture,'beginner/01_MARKETS.md'),'\nA new source explanation awaits import.\n');
     appendFileSync(resolve(fixture,'labs/options_lab.py'),'\n# A changed teaching attachment.\n');
