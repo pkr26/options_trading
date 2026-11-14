@@ -1,8 +1,20 @@
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname, posix } from 'node:path';
 const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = resolve(app, '..');
+const checkOnly = process.argv.includes('--check');
+if (process.argv.slice(2).some(argument => argument !== '--check')) throw new Error('Use import-course.mjs with no arguments or --check.');
+const staleFiles = [];
+function emit(destination, value) {
+  const expected = Buffer.isBuffer(value) ? value : Buffer.from(value, 'utf8');
+  if (checkOnly) {
+    if (!existsSync(destination) || !readFileSync(destination).equals(expected)) staleFiles.push(destination.slice(app.length + 1));
+    return;
+  }
+  mkdirSync(dirname(destination), {recursive:true});
+  writeFileSync(destination, expected);
+}
 const titles = ['Money and markets','Meet the option contract','Understand profit and loss','Why option prices change','Exercise and expiration','Understand the strategies','Risk and better decisions','Practice and put it together'];
 const descriptions = ['Start with shares, prices and the way a trade happens.','Learn calls, puts and the details of one contract.','Separate an option’s value from the money you made.','Explore time, volatility and the Greeks, one at a time.','Follow the shares and cash through the life of a contract.','Understand common positions and the choice to make no trade.','Make a plan that accounts for losses and uncertainty.','Bring your skills together with paper exercises and a capstone.'];
 
@@ -55,9 +67,8 @@ const library = resources.map(file => {
   const raw = readFileSync(resolve(root,file),'utf8');
   return {file,title:raw.split('\n')[0].replace(/^#\s*/,''),body:normalizeLinks(raw,file)};
 });
-mkdirSync(resolve(app,'content'),{recursive:true});
-writeFileSync(resolve(app,'content/course.json'),JSON.stringify(modules,null,2)+'\n');
-writeFileSync(resolve(app,'content/library.json'),JSON.stringify(library,null,2)+'\n');
+emit(resolve(app,'content/course.json'),JSON.stringify(modules,null,2)+'\n');
+emit(resolve(app,'content/library.json'),JSON.stringify(library,null,2)+'\n');
 
 // Keep this as a teaching-file allowlist. Never copy the workspace wholesale:
 // account records, application dependencies, credentials and runtime state are
@@ -72,8 +83,7 @@ const attachments = [
 ].sort();
 for (const file of attachments) {
   const destination=resolve(app,'public',file);
-  mkdirSync(dirname(destination),{recursive:true});
-  copyFileSync(resolve(root,file),destination);
+  emit(destination,readFileSync(resolve(root,file)));
 }
 
 // A small standards-compatible ZIP using stored entries avoids a Python or
@@ -123,6 +133,10 @@ const archiveFiles=[
   'labs/README.md',
   ...archiveOverrides.keys(),
 ].sort();
-mkdirSync(resolve(app,'public/downloads'),{recursive:true});
-writeFileSync(resolve(app,'public/downloads/options-course.zip'),teachingZip(archiveFiles,archiveOverrides));
-console.log(`Imported ${modules.length} modules, ${modules.flatMap(m=>m.lessons).length} lessons and ${library.length} reference documents; copied ${attachments.length} attachments and packaged ${archiveFiles.length} teaching files`);
+emit(resolve(app,'public/downloads/options-course.zip'),teachingZip(archiveFiles,archiveOverrides));
+if (checkOnly) {
+  if (staleFiles.length) {
+    console.error(`Teaching outputs differ from their sources:\n${staleFiles.map(file => `  ${file}`).join('\n')}\nRun npm run content:import, review the changes, then check again.`);
+    process.exitCode = 1;
+  } else console.log(`Teaching outputs are current: ${modules.length} modules, ${modules.flatMap(m=>m.lessons).length} lessons, ${library.length} reference documents, ${attachments.length} attachments and ${archiveFiles.length} ZIP entries.`);
+} else console.log(`Imported ${modules.length} modules, ${modules.flatMap(m=>m.lessons).length} lessons and ${library.length} reference documents; copied ${attachments.length} attachments and packaged ${archiveFiles.length} teaching files`);

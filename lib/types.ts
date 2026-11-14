@@ -1,10 +1,10 @@
 export type Lesson = { id: number; moduleId: number; title: string; minutes: number; sourceFile: string; body: string };
 export type CourseModule = { id: number; title: string; description: string; file: string; sourceFile: string; introduction: string; lessons: Lesson[]; checkpoint: string };
-export type Progress = { lessonId: number; completedAt: string; nextReviewAt: string; reviewCount: number };
+export type Progress = { lessonId: number; completedAt: string; nextReviewAt: string; reviewCount: number; reviewRevision: number };
 export type Note = { lessonId: number; content: string; updatedAt: string };
-export type Attempt = { id: string; moduleId: number; variant: number; score: number; total: number; passed: boolean; createdAt: string };
+export type Attempt = { id: string; moduleId: number; variant: number; score: number; total: number; passed: boolean; createdAt: string; sequence: number | null; answers: Record<string,number> | null; feedback: GradedQuestion[] | null; courseVersion: string | null; questionVersion: string | null };
 export type LearningState = { user: { name: string; email: string }; profile: { dailyMinutes: number; timezone: string }; progress: Progress[]; notes: Note[]; attempts: Attempt[] };
 export type QuizQuestion = { id: string; prompt: string; options: string[] };
 export type GradedQuestion = QuizQuestion & { selected: number; correctIndex: number; correct: boolean; explanation: string };
-export type Quiz = { moduleId: number; variant: number; questions: QuizQuestion[] };
+export type Quiz = { moduleId: number; variant: number; revision: number; questions: QuizQuestion[] };
 export type QuizResult = { score: number; total: number; passed: boolean; feedback: GradedQuestion[] };

@@ -15,6 +15,43 @@ from options_lab import (
 
 
 class AccountingTests(unittest.TestCase):
+    def test_opening_balances_require_finite_cash_and_whole_positions(self):
+        contract = Contract("C100", 100, "call")
+        for bad_cash in (math.nan, math.inf, -math.inf, True, "100"):
+            with self.subTest(cash=bad_cash), self.assertRaises(ValueError):
+                Ledger(contract, cash=bad_cash)
+        for field in ("shares", "option_qty"):
+            for bad_quantity in (0.5, 1.0, True, False, math.nan, math.inf, None):
+                with self.subTest(field=field, value=bad_quantity), self.assertRaises(ValueError):
+                    Ledger(contract, cash=10000, **{field: bad_quantity})
+        ledger = Ledger(contract, cash=-200, shares=-10, option_qty=-1)
+        self.assertEqual((ledger.cash, ledger.shares, ledger.option_qty), (-200, -10, -1))
+
+    def test_public_methods_reject_corrupted_state_before_mutating_it(self):
+        contract = Contract("C100", 100, "call")
+        for field, value in (("cash", math.nan), ("shares", 0.5), ("option_qty", True)):
+            for operation in (lambda row: row.trade_option(1, 3),
+                              lambda row: row.settle(110),
+                              lambda row: row.equity(110, 4)):
+                ledger = Ledger(contract, cash=10000, option_qty=1)
+                setattr(ledger, field, value)
+                before = vars(ledger).copy()
+                with self.subTest(field=field, operation=operation), self.assertRaises(ValueError):
+                    operation(ledger)
+                self.assertEqual(vars(ledger), before)
+
+    def test_invalid_trade_and_settlement_leave_balances_unchanged(self):
+        ledger = Ledger(Contract("C100", 100, "call"), cash=10000, option_qty=1)
+        before = (ledger.cash, ledger.shares, ledger.option_qty)
+        for premium in (math.nan, math.inf, -1, 1e308):
+            with self.subTest(premium=premium), self.assertRaises(ValueError):
+                ledger.trade_option(1, premium)
+            self.assertEqual((ledger.cash, ledger.shares, ledger.option_qty), before)
+        for spot in (math.nan, math.inf, -1):
+            with self.subTest(spot=spot), self.assertRaises(ValueError):
+                ledger.settle(spot)
+            self.assertEqual((ledger.cash, ledger.shares, ledger.option_qty), before)
+
     def test_accounting_rejects_boolean_quantities(self):
         contract = Contract("C100", 100, "call")
         with self.assertRaises(ValueError):
@@ -107,6 +144,23 @@ class ModelTests(unittest.TestCase):
 
 
 class DataExecutionTests(unittest.TestCase):
+    def test_direct_quote_sizes_cannot_create_invalid_contract_fills(self):
+        quote = load_quotes(DATA / "quotes.csv")[0]
+        for field in ("bid_size", "ask_size"):
+            for invalid in (0.5, 1.0, True, False, math.nan, math.inf, -math.inf, None):
+                changed = replace(quote, **{field: invalid})
+                with self.subTest(field=field, size=invalid):
+                    self.assertIn("invalid_visible_size", quote_flags(changed))
+                    for side in ("buy", "sell"):
+                        with self.assertRaises(ValueError):
+                            simulate_order(changed, side, 1, 3)
+            for unavailable in (0, -1):
+                changed = replace(quote, **{field: unavailable})
+                with self.subTest(field=field, size=unavailable):
+                    self.assertIn("no_visible_size", quote_flags(changed))
+                    with self.assertRaises(ValueError):
+                        simulate_order(changed, "buy", 1, 3)
+
     def test_backtest_rejects_exit_before_entry(self):
         quotes = load_quotes(DATA / "quotes.csv")
         decision = load_decisions(DATA / "decisions.csv")[0]

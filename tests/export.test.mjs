@@ -46,3 +46,20 @@ test("user note formula prefixes are neutralized before spreadsheet use", () => 
   assert.equal(csvCell(null), '""');
   assert.equal(csvCell(0), '"0"');
 });
+
+test("exports retain new checkpoint evidence while representing legacy unknowns honestly", () => {
+  const feedback = [{id:"m1v0q1",prompt:"A question",options:["A","B","C","D"],selected:1,correctIndex:0,correct:false,explanation:"Why A"}];
+  const csv = exportLearningCsv({formatVersion:2,courseVersion:"2026-11-14.2",exportedAt:"2026-11-14T12:00:00Z",profile:[],progress:[],notes:[],attempts:[
+    {id:"legacy",moduleId:1,variant:0,score:4,total:5,passed:false,createdAt:"2026-11-01T00:00:00Z",sequence:null,answers:null,feedback:null,courseVersion:null,questionVersion:null},
+    {id:"new",moduleId:1,variant:1,score:0,total:5,passed:false,createdAt:"2026-11-14T00:00:00Z",sequence:1,answers:{m1v0q1:1},feedback,courseVersion:"2026-11-14.2",questionVersion:"v1"},
+  ]});
+  const [header,...rows] = parseCsv(csv);
+  const records = rows.map(row => Object.fromEntries(header.map((key,i)=>[key,row[i]])));
+  assert.equal(records.find(row=>row.id==="legacy").answers_json, "");
+  const current=records.find(row=>row.id==="new");
+  assert.deepEqual(JSON.parse(current.answers_json), {m1v0q1:1});
+  assert.deepEqual(JSON.parse(current.feedback_json), feedback);
+  assert.equal(current.course_version,"2026-11-14.2");
+  assert.equal(current.question_version,"v1");
+  assert.equal(current.attempt_sequence,"1");
+});

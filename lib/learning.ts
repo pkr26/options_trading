@@ -9,3 +9,5 @@ export function gradeQuestions<T extends {id:string;correctIndex:number;explanat
   const score=feedback.filter(q=>q.correct).length;
   return {score,total:questions.length,passed:score===questions.length,feedback};
 }
+export const COURSE_VERSION = "2026-11-14.2";
+export const QUESTION_VERSION = "beginner-checkpoints-2026-11-14-v1";

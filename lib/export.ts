@@ -18,13 +18,13 @@ export function csvCell(value: unknown): string {
 }
 
 export function exportLearningCsv(data: LearningExport): string {
-  const headers = ["record_type", "id", "lesson_id", "module_id", "content", "completed_at", "next_review_at", "review_count", "variant", "score", "total", "passed", "created_at", "daily_minutes", "timezone", "course_version", "exported_at"];
+  const headers = ["record_type", "id", "lesson_id", "module_id", "content", "completed_at", "next_review_at", "review_count", "review_revision", "variant", "score", "total", "passed", "created_at", "daily_minutes", "timezone", "course_version", "question_version", "attempt_sequence", "answers_json", "feedback_json", "exported_at"];
   const rows: Record<string, unknown>[] = [
     { record_type: "metadata", course_version: data.courseVersion, exported_at: data.exportedAt },
     ...data.profile.map(row => ({ record_type: "profile", daily_minutes: row.dailyMinutes, timezone: row.timezone })),
-    ...data.progress.map(row => ({ record_type: "progress", lesson_id: row.lessonId, completed_at: row.completedAt, next_review_at: row.nextReviewAt, review_count: row.reviewCount })),
+    ...data.progress.map(row => ({ record_type: "progress", lesson_id: row.lessonId, completed_at: row.completedAt, next_review_at: row.nextReviewAt, review_count: row.reviewCount, review_revision: row.reviewRevision })),
     ...data.notes.map(row => ({ record_type: "note", lesson_id: row.lessonId, content: row.content, created_at: row.updatedAt })),
-    ...data.attempts.map(row => ({ record_type: "attempt", id: row.id, module_id: row.moduleId, variant: row.variant, score: row.score, total: row.total, passed: row.passed, created_at: row.createdAt })),
+    ...data.attempts.map(row => ({ record_type: "attempt", id: row.id, module_id: row.moduleId, variant: row.variant, score: row.score, total: row.total, passed: row.passed, created_at: row.createdAt, course_version: row.courseVersion, question_version: row.questionVersion, attempt_sequence: row.sequence, answers_json: row.answers ? JSON.stringify(row.answers) : "", feedback_json: row.feedback ? JSON.stringify(row.feedback) : "" })),
   ];
   return [headers.map(csvCell).join(","), ...rows.map(row => headers.map(header => csvCell(row[header])).join(","))].join("\r\n") + "\r\n";
 }

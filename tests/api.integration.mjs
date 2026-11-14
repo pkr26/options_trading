@@ -38,7 +38,9 @@ function database(sql) {
   assert.ok(parsed.every(result => result.success !== false), "Local database statement failed.");
   return parsed;
 }
-async function request(path, {method = "GET", body, headers = {}, signed = true, type = "application/json"} = {}) {
+async function request(path, {method = "GET", body, headers = {}, signed = true, type = "application/json", stream = false} = {}) {
+  const payload = body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body);
+  const streamed = stream && payload !== undefined ? new ReadableStream({start(controller) { const bytes = new TextEncoder().encode(payload); for (let i = 0; i < bytes.length; i += 16384) controller.enqueue(bytes.slice(i, i + 16384)); controller.close(); }}) : undefined;
   const response = await fetch(new URL(path, base), {
     method, redirect: "manual",
     headers: {
@@ -46,7 +48,7 @@ async function request(path, {method = "GET", body, headers = {}, signed = true,
       ...(method !== "GET" ? {Origin: base.origin, "Content-Type": type} : {}),
       ...headers,
     },
-    ...(body === undefined ? {} : {body: typeof body === "string" ? body : JSON.stringify(body)}),
+    ...(payload === undefined ? {} : stream ? {body: streamed, duplex: "half"} : {body: payload}),
   });
   const text = await response.text();
   let data;
@@ -97,6 +99,11 @@ try {
   status(await request("/api/profile", {method: "PUT", body: {dailyMinutes: 10, timezone: "Not/A_Timezone"}}), 400, "Invalid timezone");
   status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "bad origin"}, headers: {Origin: "https://example.invalid"}}), 403, "Cross-origin mutation");
   status(await request("/api/notes", {method: "PUT", body: "plain", type: "text/plain"}), 415, "Wrong request content type");
+  for (const stream of [false, true]) {
+    status(await request("/api/notes", {method: "PUT", stream, body: {lessonId: 0, content: "valid", ignored: "x".repeat(100000)}}), 413, `Measured body limit (${stream ? "streamed" : "fixed-length"})`);
+  }
+  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "学".repeat(10000)}}), 200, "10,000-code-unit Unicode note");
+  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "\u0000".repeat(10000)}}), 200, "10,000-code-unit JSON-escaped note");
 
   const note = '=SUM(A1:A2), "paper only"\nKeep the losing case.';
   status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "first note"}}), 200, "Create own note");
@@ -120,39 +127,68 @@ try {
   let quiz = await request("/api/quiz?moduleId=1");
   status(quiz, 200, "Fetch first checkpoint form");
   assert.equal(quiz.data.variant, 0);
+  assert.equal(quiz.data.revision, 0);
   assert.equal(quiz.data.questions.length, 5);
   assert.ok(quiz.data.questions.every(q => !("correctIndex" in q) && !("explanation" in q)));
-  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, answers: {}}}), 400, "Missing answers rejected");
+  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, revision: 0, answers: {}}}), 400, "Missing answers rejected");
   const wrong = Object.fromEntries(buildQuiz(1, 0).map(q => [q.id, (q.correctIndex + 1) % 4]));
-  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, answers: {...wrong, extra: 0}}}), 400, "Extra answers rejected");
-  const failed = await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, answers: wrong}});
+  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, revision: 0, answers: {...wrong, extra: 0}}}), 400, "Extra answers rejected");
+  const failed = await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, revision: 0, answers: wrong}});
   status(failed, 200, "Grade unsuccessful form zero");
   assert.equal(failed.data.score, 0);
   assert.equal(failed.data.passed, false);
   status(await request("/api/progress", {method: "POST", body: {lessonId: 9, action: "complete"}}), 409, "Failed own checkpoint cannot unlock module");
-  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, answers: wrong}}), 409, "Stale form rejected");
+  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, revision: 0, answers: wrong}}), 409, "Stale form rejected");
   quiz = await request("/api/quiz?moduleId=1");
   status(quiz, 200, "Fetch alternate checkpoint form");
   assert.equal(quiz.data.variant, 1);
+  assert.equal(quiz.data.revision, 1);
   const correct = Object.fromEntries(buildQuiz(1, 1).map(q => [q.id, q.correctIndex]));
-  const passed = await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 1, answers: correct}});
+  const passed = await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 1, revision: 1, answers: correct}});
   status(passed, 200, "Grade successful alternate form");
   assert.equal(passed.data.score, 5);
   assert.equal(passed.data.passed, true);
   status(await request("/api/progress", {method: "POST", body: {lessonId: 9, action: "complete"}}), 200, "Own checkpoint unlocks lesson nine");
-  status(await request("/api/progress", {method: "POST", body: {lessonId: 1, action: "review", recalled: true}}), 200, "Recall review");
+  // A stale revision must remain stale even after its variant becomes current again.
+  status(await request("/api/quiz", {method: "POST", body: {moduleId: 1, variant: 0, revision: 0, answers: wrong}}), 409, "Stale revision rejected after variant wrap");
+  const nextQuiz = await request("/api/quiz?moduleId=1");
+  assert.equal(nextQuiz.data.revision, 2);
+  assert.equal(nextQuiz.data.variant, 0);
+  const nextAnswers = Object.fromEntries(buildQuiz(1, 0).map(q => [q.id, q.correctIndex]));
+  const duplicate = await Promise.all([1,2].map(() => request("/api/quiz", {method:"POST",body:{moduleId:1,variant:0,revision:2,answers:nextAnswers}})));
+  assert.deepEqual(duplicate.map(r=>r.response.status).sort(), [200,409], "Exactly one concurrent checkpoint submission is accepted");
+  checks += 2;
+  const afterDuplicate = await request("/api/quiz?moduleId=1");
+  assert.equal(afterDuplicate.data.revision,3);
+  assert.equal(afterDuplicate.data.variant,1);
+
+  status(await request("/api/progress", {method: "POST", body: {lessonId: 1, action: "review", recalled: true, reviewRevision: 0}}), 200, "Recall review");
+  status(await request("/api/progress", {method: "POST", body: {lessonId: 1, action: "review", recalled: true, reviewRevision: 0}}), 409, "Duplicate recall revision rejected");
   state = await request("/api/learning");
   assert.equal(state.data.progress.find(row => row.lessonId === 1).reviewCount, 1);
-  status(await request("/api/progress", {method: "POST", body: {lessonId: 1, action: "review", recalled: false}}), 200, "Miss resets review count");
+  assert.equal(state.data.progress.find(row => row.lessonId === 1).reviewRevision, 1);
+  status(await request("/api/progress", {method: "POST", body: {lessonId: 1, action: "review", recalled: false, reviewRevision: 1}}), 200, "Miss resets review count");
   state = await request("/api/learning");
   assert.equal(state.data.progress.find(row => row.lessonId === 1).reviewCount, 0);
-  assert.deepEqual(state.data.attempts.map(row => row.score).sort((a, b) => a - b), [0, 5]);
+  assert.equal(state.data.progress.find(row => row.lessonId === 1).reviewRevision, 2);
+  const recallResults = await Promise.all([true,false].map(recalled => request("/api/progress", {method:"POST",body:{lessonId:1,action:"review",recalled,reviewRevision:2}})));
+  assert.deepEqual(recallResults.map(r=>r.response.status).sort(),[200,409],"Only one result can consume the same recall revision");
+  checks += 2;
+  state = await request("/api/learning");
+  const finalRecall = state.data.progress.find(row=>row.lessonId===1);
+  assert.equal(finalRecall.reviewRevision,3);
+  assert.equal(finalRecall.reviewCount,recallResults[0].response.status===200?1:0,"Rejected recall must not overwrite the accepted result");
+  assert.deepEqual(state.data.attempts.map(row => row.score).sort((a, b) => a - b), [0, 5, 5]);
+  assert.deepEqual(state.data.attempts.map(row=>row.sequence).sort(),[0,1,2]);
+  assert.ok(state.data.attempts.every(row=>row.answers && row.feedback?.length===5 && row.courseVersion==="2026-11-14.2" && row.questionVersion));
 
   const json = await request("/api/export");
   status(json, 200, "JSON export");
   assert.equal(json.data.notes[0].content, note);
   assert.equal(json.data.progress.length, 9);
-  assert.equal(json.data.attempts.length, 2);
+  assert.equal(json.data.attempts.length, 3);
+  assert.equal(json.data.formatVersion, 2);
+  assert.deepEqual(json.data.attempts.find(row=>row.sequence===2).answers, nextAnswers);
   assert.ok(!json.text.includes(peer));
   assert.ok(!json.text.includes("PRIVATE PEER NOTE"));
   assert.ok(!json.text.includes('"userId"'));

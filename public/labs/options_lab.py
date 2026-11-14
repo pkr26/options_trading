@@ -88,23 +88,58 @@ class Ledger:
     shares: int = 0
     option_qty: int = 0
 
+    def __post_init__(self) -> None:
+        self._validate_state()
+
+    @staticmethod
+    def _validate_balances(cash: float, shares: int, option_qty: int) -> None:
+        if isinstance(cash, bool):
+            raise ValueError("cash must be finite")
+        try:
+            valid_cash = math.isfinite(cash)
+        except (TypeError, OverflowError):
+            valid_cash = False
+        if not valid_cash:
+            raise ValueError("cash must be finite")
+        for name, value in (("shares", shares), ("option_qty", option_qty)):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(f"{name} must be an integer, not a boolean")
+
+    def _validate_state(self) -> None:
+        if not isinstance(self.contract, Contract):
+            raise ValueError("ledger requires a validated Contract")
+        self._validate_balances(self.cash, self.shares, self.option_qty)
+
     def trade_option(self, quantity_change: int, premium: float,
                      fee_per_contract: float = 0.0) -> None:
+        self._validate_state()
         if (isinstance(quantity_change, bool) or quantity_change == 0 or
                 not isinstance(quantity_change, int)):
             raise ValueError("quantity_change must be a nonzero integer")
         if (not math.isfinite(premium) or premium < 0 or
                 not math.isfinite(fee_per_contract) or fee_per_contract < 0):
             raise ValueError("invalid premium or fee")
-        self.cash -= quantity_change * premium * self.contract.multiplier
-        self.cash -= abs(quantity_change) * fee_per_contract
-        self.option_qty += quantity_change
+        try:
+            new_cash = (self.cash - quantity_change * premium * self.contract.multiplier
+                        - abs(quantity_change) * fee_per_contract)
+        except OverflowError as error:
+            raise ValueError("trade cash flow must be finite") from error
+        new_option_qty = self.option_qty + quantity_change
+        self._validate_balances(new_cash, self.shares, new_option_qty)
+        self.cash, self.option_qty = new_cash, new_option_qty
 
     def equity(self, spot: float, option_mark: float) -> float:
+        self._validate_state()
         finite_nonnegative(spot, "spot")
         if not math.isfinite(option_mark) or option_mark < 0:
             raise ValueError("invalid option mark")
-        return self.cash + self.shares * spot + self.option_qty * option_mark * self.contract.multiplier
+        try:
+            value = self.cash + self.shares * spot + self.option_qty * option_mark * self.contract.multiplier
+        except OverflowError as error:
+            raise ValueError("marked equity must be finite") from error
+        if not math.isfinite(value):
+            raise ValueError("marked equity must be finite")
+        return value
 
     def settle(self, spot_or_settlement_value: float) -> None:
         """Illustrative ITM expiry settlement of all contracts at supplied value.
@@ -112,19 +147,20 @@ class Ledger:
         This is not an early-assignment, broker cutoff, pin-risk, or exercise-
         instruction model. The caller must supply the product's settlement value.
         """
-        if self.option_qty == 0:
-            return
+        self._validate_state()
         value = intrinsic_cash(self.contract, spot_or_settlement_value)
+        new_cash, new_shares = self.cash, self.shares
         if self.contract.settlement == "cash":
-            self.cash += self.option_qty * value
+            new_cash += self.option_qty * value
         elif value > 0:
             if self.contract.right == "call":
-                self.shares += self.option_qty * self.contract.deliverable_shares
-                self.cash -= self.option_qty * self.contract.strike * self.contract.multiplier
+                new_shares += self.option_qty * self.contract.deliverable_shares
+                new_cash -= self.option_qty * self.contract.strike * self.contract.multiplier
             else:
-                self.shares -= self.option_qty * self.contract.deliverable_shares
-                self.cash += self.option_qty * self.contract.strike * self.contract.multiplier
-        self.option_qty = 0
+                new_shares -= self.option_qty * self.contract.deliverable_shares
+                new_cash += self.option_qty * self.contract.strike * self.contract.multiplier
+        self._validate_balances(new_cash, new_shares, 0)
+        self.cash, self.shares, self.option_qty = new_cash, new_shares, 0
 
 
 def normal_cdf(x: float) -> float:
@@ -269,7 +305,10 @@ def quote_flags(quote: Quote) -> list[str]:
         issues.append("zero_or_negative")
     if quote.bid >= quote.ask:
         issues.append("locked_or_crossed")
-    if quote.bid_size <= 0 or quote.ask_size <= 0:
+    sizes = (quote.bid_size, quote.ask_size)
+    if any(isinstance(size, bool) or not isinstance(size, int) for size in sizes):
+        issues.append("invalid_visible_size")
+    elif any(size <= 0 for size in sizes):
         issues.append("no_visible_size")
     return issues
 
