@@ -1,6 +1,7 @@
 import { sqliteTable, text, integer, primaryKey, uniqueIndex } from "drizzle-orm/sqlite-core";
 import type { GradedQuestion } from "../lib/types";
 import type { GraduateAnswer, GraduateModule, GraduatePracticeFeedback } from "../lib/graduate-types";
+import type { TeachingEvidence } from "../lib/teaching-types";
 
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
@@ -62,3 +63,14 @@ export const graduatePractice = sqliteTable("graduate_practice", {
   questionVersion: text("question_version").notNull(),
   createdAt: text("created_at").notNull(),
 }, t => [uniqueIndex("graduate_practice_owner_module_sequence").on(t.userId, t.moduleId, t.sequence)]);
+
+export const teachingEvents = sqliteTable("teaching_events", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  kind: text("kind").$type<TeachingEvidence["kind"]>().notNull(),
+  entityId: text("entity_id").notNull(),
+  revision: integer("revision").notNull(),
+  payload: text("payload", {mode:"json"}).$type<unknown>().notNull(),
+  version: text("version").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [uniqueIndex("teaching_events_owner_kind_entity_revision").on(t.userId,t.kind,t.entityId,t.revision)]);

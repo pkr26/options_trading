@@ -28,6 +28,18 @@ Run `node --experimental-strip-types tests/graduate-api.integration.mjs` against
 
 ## Application design
 
+### Adaptive teaching, review and pilot
+
+Open **Advanced academy → Teaching studio**. The tutor uses saved error evidence, prerequisites and due checks to recommend study. It provides a single question, specific diagnosis, hints, worked correction and a changed transfer check. Assistance and original answers remain in immutable event history. It is a deterministic instructional system; it does not make an external language-model call.
+
+Writing feedback evaluates an exact saved submission against its module's rubric. It quotes detectable argument evidence, identifies missing working/alternatives/uncertainty, flags selected explicit contradictions and provides module-specific revision questions. Detected evidence is not an academic grade. The review desk downloads the original packet and records actual criterion scores, exact quoted evidence, reviewer challenge and learner response. External reviews are attributed reports, not credential verification.
+
+The pilot enrolls once, freezes three module blueprints, records an actual baseline and schedules server-enforced day-7 and day-30 forms. Day-7 closes at elapsed day 14 and day-30 at day 45; late/missing measurements are visible. Forms are parallel numerical practice; the full written-case/reviewer protocol lives in the teaching library. No cohort outcomes are invented. Normal teaching reads load latest snapshots, and the full export streams historical records in bounded batches.
+
+Additional labs cover joint portfolio shocks/funding and research-evidence critique. **My evidence** includes a capstone artifact manifest with immutable revisions for protocols, data audits, models, execution, stress and defenses.
+
+The additive `drizzle/0003_workable_whirlwind.sql` migration creates owner-scoped teaching events. Apply it once after migrations 0000–0002 in a local database; hosted publication applies pending tracked migrations. The new routes are `/api/teaching`, `/api/teaching/tutor`, `/api/teaching/feedback`, `/api/teaching/review`, `/api/teaching/pilot`, `/api/teaching/artifact` and `/api/teaching/export`. Mutations authenticate, validate a measured JSON body and preserve optimistic revisions. Run `tests/teaching-api.integration.mjs` separately from other tests that write the portable learner's records.
+
 | Layer | Technology | Purpose |
 | --- | --- | --- |
 | UI | React 19 and TypeScript | Responsive dashboard and focused lesson reader |
@@ -57,12 +69,13 @@ npm test
 npm run build
 ```
 
-The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs all three migrations. Apply only the migrations not already present in an existing local database:
+The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs all four migrations. Apply only the migrations not already present in an existing local database:
 
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_loving_thanos.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_modern_firestar.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_regular_karen_page.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_workable_whirlwind.sql
 npm run dev -- --port 5173
 ```
 

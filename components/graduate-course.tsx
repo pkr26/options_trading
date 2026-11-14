@@ -5,8 +5,12 @@ import { ArrowDownToLine, ArrowRight, BookOpen, CheckCircle2, ChevronRight, Clip
 import graduateContent from "@/content/graduate.json";
 import { competencyIds } from "@/lib/graduate-types";
 import type { CompetencyId, GraduateAnswer, GraduateModule, GraduatePracticeAttempt, GraduatePracticeQuestion, GraduateState, GraduateSubmission } from "@/lib/graduate-types";
+import type { TeachingState, RecordedReview } from "@/lib/teaching-types";
 import Markdown from "./markdown";
 import GraduateLabs from "./graduate-labs";
+import TeachingStudio from "./teaching-studio";
+import PortfolioResearchLabs from "./portfolio-research-labs";
+import CapstoneArtifacts from "./capstone-artifacts";
 import "./graduate-course.css";
 
 const curriculum = graduateContent as GraduateModule[];
@@ -19,12 +23,13 @@ const fields: { key: keyof GraduateAnswer; title: string; help: string }[] = [
   { key: "reflection", title: "Defense, reflection, and reviewer notes", help: "Answer the defense prompts, identify the weakest assumption, and record feedback or corrections. Name a reviewer only when a review actually occurred." },
 ];
 const blankAnswer = (): GraduateAnswer => ({ recommendation: "", analysis: "", risks: "", revision: "", reflection: "" });
-type Pane = "program" | "seminar" | "case" | "practice" | "labs" | "evidence";
+type Pane = "program" | "seminar" | "case" | "practice" | "labs" | "evidence" | "teaching";
 const panes = [
   { id: "program", name: "Program", icon: GraduationCap },
   { id: "seminar", name: "Classroom", icon: BookOpen },
   { id: "case", name: "Case studio", icon: ClipboardList },
   { id: "practice", name: "Fresh practice", icon: Target },
+  { id: "teaching", name: "Teaching studio", icon: Lightbulb },
   { id: "labs", name: "Scenario labs", icon: FlaskConical },
   { id: "evidence", name: "My evidence", icon: FileText },
 ] as const;
@@ -45,7 +50,7 @@ const ordered = (items: GraduateSubmission[]) => [...items].sort((a, b) => b.rev
 const stamp = (value: string) => new Date(value).toLocaleString("en-US", { timeZone: "America/Phoenix", dateStyle: "medium", timeStyle: "short" });
 const number = (value: number) => Number.isInteger(value) ? String(value) : String(Number(value.toFixed(5)));
 function readLocation() {
-  const match = window.location.hash.match(/^#advanced\/module\/(\d+)(?:\/(program|seminar|case|practice|labs|evidence))?$/);
+  const match = window.location.hash.match(/^#advanced\/module\/(\d+)(?:\/(program|seminar|case|practice|labs|evidence|teaching))?$/);
   return match && curriculum.some(module => module.id === Number(match[1])) ? { moduleId: Number(match[1]), pane: (match[2] ?? "seminar") as Pane } : null;
 }
 
@@ -58,6 +63,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
   const [selectedId, setSelectedId] = useState(10);
   const [search, setSearch] = useState("");
   const [record, setRecord] = useState<GraduateState>({ submissions: [], practice: [] });
+  const [teachingEvidence,setTeachingEvidence]=useState<TeachingState|null>(null);
   const [loaded, setLoaded] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [busy, setBusy] = useState("");
@@ -120,6 +126,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
   const updateVisible = revealed.includes(selected.id);
   const debriefVisible = debriefs.includes(selected.id);
   const submittedModules = new Set(record.submissions.filter(item => item.kind === "submission").map(item => item.moduleId));
+  const recordedReviews=(teachingEvidence?.events.filter(event=>event.kind==="review").map(event=>event.payload as RecordedReview))??[];
   const selectedPractice = record.practice.filter(item => item.moduleId === selected.id).sort((a, b) => b.sequence - a.sequence);
   const retentionChecks = curriculum.flatMap(module => {
     const attempts = record.practice.filter(item => item.moduleId === module.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
@@ -132,6 +139,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
 
   function navigate(next: Pane) {
     setPane(next); setMessage(null);
+    if(next === "teaching")window.dispatchEvent(new Event("teaching:refresh"));
     window.history.replaceState(null, "", `#advanced/module/${selectedId}/${next}`);
     window.requestAnimationFrame(() => document.getElementById("graduate-heading")?.focus({ preventScroll: true }));
   }
@@ -156,6 +164,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
     try {
       const result = await api<{ submission: GraduateSubmission }>("/api/graduate", { method: "PUT", body: JSON.stringify({ moduleId: id, expectedRevision, kind, answers: payload }) });
       setRecord(previous => ({ ...previous, submissions: [...previous.submissions, result.submission] }));
+      window.dispatchEvent(new Event("graduate:evidence-changed"));
       setBaseRevisions(previous => ({ ...previous, [id]: result.submission.revision }));
       setDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
       setConflictId(null);
@@ -183,6 +192,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
     try {
       const result = await api<{ attempt: GraduatePracticeAttempt }>("/api/graduate/practice", { method: "POST", body: JSON.stringify({ moduleId: practice.moduleId, sequence: practice.sequence, answers: Object.fromEntries(Object.entries(practiceAnswers).map(([key, value]) => [key, Number(value)])) }) });
       setPracticeResult(result.attempt); setRecord(previous => ({ ...previous, practice: [...previous.practice, result.attempt] }));
+      window.dispatchEvent(new Event("graduate:evidence-changed"));
     } catch (error) { setMessage({ text: (error as Error).message, error: true }); }
     finally { setBusy(""); }
   }
@@ -242,19 +252,23 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
       {selectedPractice.length > 0 && <section className="graduate-history panel"><h2>Checks for this module</h2>{selectedPractice.map(attempt => <details key={attempt.id}><summary>Sequence {attempt.sequence} · {attempt.score}/{attempt.total} correct · {stamp(attempt.createdAt)}</summary>{attempt.feedback.map(item => <div className="graduate-history-answer" key={item.id}><h3>{item.prompt}</h3><p>Your answer: {number(item.answer)} {item.unit}. Expected: {number(item.expected)} {item.unit}.</p><p>{item.explanation}</p></div>)}</details>)}</section>}
     </>}
 
-    {pane === "labs" && <GraduateLabs />}
+    <div hidden={pane !== "teaching"}><TeachingStudio onModule={moduleId => selectModule(moduleId,"seminar")} onEvidence={setTeachingEvidence}/></div>
+    <div hidden={pane !== "evidence"}><CapstoneArtifacts /></div>
+    {pane === "labs" && <><GraduateLabs /><PortfolioResearchLabs /></>}
 
     {pane === "evidence" && <>
-      <section className="graduate-evidence-intro panel"><div><p className="eyebrow">A PORTFOLIO OF YOUR THINKING</p><h2>Keep the evidence behind the conclusion.</h2><p>Submitted writing awaits rubric review. Calculation scores show performance on those questions. Revisit unfamiliar cases later to test retention and transfer.</p></div><a className="button button-secondary" href="/api/graduate/export"><ArrowDownToLine size={16} />Export advanced evidence</a></section>
+      <section className="graduate-evidence-intro panel"><div><p className="eyebrow">A PORTFOLIO OF YOUR THINKING</p><h2>Keep the evidence behind the conclusion.</h2><p>Inspect the source and findings of each recorded review in Teaching studio. Calculation scores show performance on those questions; later cases test retention and transfer.</p></div><a className="button button-secondary" href="/api/graduate/export"><ArrowDownToLine size={16} />Export advanced evidence</a></section>
       <section className="graduate-competencies"><h2>Evidence by competency</h2><div className="graduate-competency-grid">{competencyIds.map(skill => {
         const checks = record.practice.flatMap(attempt => attempt.feedback.filter(item => item.skill === skill));
         const correct = checks.filter(item => item.correct).length;
         const writing = record.submissions.filter(item => item.kind === "submission" && curriculum.find(module => module.id === item.moduleId)?.competencies.includes(skill));
-        return <article className="graduate-competency panel" key={skill}><h3>{labels[skill]}</h3><p><strong>{checks.length ? `${correct}/${checks.length}` : "No"}</strong> calculation checks correct</p><p>{writing.length} written submission{writing.length === 1 ? "" : "s"} for review</p><span>{checks.length || writing.length ? "Evidence recorded · independent review still needed" : "Begin with a related module"}</span></article>;
+        const reviewed=writing.filter(submission=>recordedReviews.some(review=>review.submissionId===submission.id));
+        const external=reviewed.filter(submission=>recordedReviews.some(review=>review.submissionId===submission.id&&review.reviewerRole==="reported_external"));
+        return <article className="graduate-competency panel" key={skill}><h3>{labels[skill]}</h3><p><strong>{checks.length ? `${correct}/${checks.length}` : "No"}</strong> calculation checks correct</p><p>{writing.length} written submission{writing.length === 1 ? "" : "s"} recorded</p><p>{reviewed.length} with attributed review · {external.length} reported external</p><span>{checks.length || writing.length ? "Inspect the review source and evidence in Teaching studio" : "Begin with a related module"}</span></article>;
       })}</div></section>
       {retentionChecks.length > 0 && <section className="graduate-retention panel"><p className="eyebrow">COME BACK TO AN UNFAMILIAR CASE</p><h2>Later checks of understanding</h2><p>Plan a fresh attempt at least seven days after your first check, and revisit again around day thirty. The dates below are study suggestions. A later score is evidence on that calculation set; it does not certify mastery.</p><div className="table-scroll"><table><thead><tr><th>Module</th><th>First check</th><th>Seven-day study point</th><th>Thirty-day study point</th><th>Later evidence</th></tr></thead><tbody>{retentionChecks.map(({ module, first, later }) => <tr key={module.id}><td><button type="button" className="text-link" onClick={() => selectModule(module.id, "practice")}>{module.id}. {module.title}</button></td><td>{first.score}/{first.total}</td><td>{stamp(new Date(Date.parse(first.createdAt) + 7 * 86400000).toISOString())}</td><td>{stamp(new Date(Date.parse(first.createdAt) + 30 * 86400000).toISOString())}</td><td>{later ? `${later.score}/${later.total} recorded ≥7 days later` : "No later check recorded"}</td></tr>)}</tbody></table></div></section>}
       <section className="graduate-mistakes panel"><div className="section-row"><div><p className="eyebrow">YOUR MISTAKE JOURNAL</p><h2>Turn an error into a better explanation.</h2></div><span className="outlined-tag">{mistakes.length} recorded corrections</span></div>{mistakes.length ? mistakes.map((item, index) => <details key={`${item.attempt.id}-${item.id}-${index}`}><summary>Module {item.attempt.moduleId} · {labels[item.skill]} · {stamp(item.attempt.createdAt)}</summary><p>{item.prompt}</p><p>Your answer: <strong>{number(item.answer)} {item.unit}</strong>. Expected: <strong>{number(item.expected)} {item.unit}</strong>.</p><p>{item.explanation}</p><button type="button" className="text-button" onClick={() => selectModule(item.attempt.moduleId, "practice")}>Return to this skill<ArrowRight size={14} /></button></details>) : <p className="graduate-empty">Missed calculation questions will appear here with your original answer and the explanation.</p>}</section>
-      <section className="graduate-capstone panel"><p className="eyebrow">THE INDEPENDENT RESEARCH DEFENSE</p><h2>Build toward a capstone you can defend.</h2><p>Choose the evidence level that your data actually support. Use the final modules to develop the protocol, analysis, robustness checks, portfolio stress, and defense.</p><ol>{[{ id: 21, title: "Freeze the question and method" }, { id: 22, title: "Reconcile the data and accounting" }, { id: 23, title: "Challenge the result" }, { id: 24, title: "Stress the portfolio and funding" }, { id: 25, title: "Develop a focused specialization" }, { id: 26, title: "Submit and defend the evidence bundle" }].map(item => <li key={item.id}><span className={submittedModules.has(item.id) ? "graduate-milestone-recorded" : ""}>{submittedModules.has(item.id) ? <CheckCircle2 size={18} /> : <span className="graduate-milestone-dot" />}</span><button type="button" onClick={() => selectModule(item.id, "case")}>{item.title}<small>Module {item.id} · {submittedModules.has(item.id) ? "Submission recorded; review pending" : "Prepare evidence"}</small></button><ChevronRight size={16} /></li>)}</ol><p className="graduate-caption">An independent reviewer should challenge a model assumption, operational event, data issue, and claimed result. Record the actual review and your response in the final case reflection.</p></section>
+      <section className="graduate-capstone panel"><p className="eyebrow">THE INDEPENDENT RESEARCH DEFENSE</p><h2>Build toward a capstone you can defend.</h2><p>Choose the evidence level that your data actually support. Use the final modules to develop the protocol, analysis, robustness checks, portfolio stress, and defense.</p><ol>{[{ id: 21, title: "Freeze the question and method" }, { id: 22, title: "Reconcile the data and accounting" }, { id: 23, title: "Challenge the result" }, { id: 24, title: "Stress the portfolio and funding" }, { id: 25, title: "Develop a focused specialization" }, { id: 26, title: "Submit and defend the evidence bundle" }].map(item => <li key={item.id}><span className={submittedModules.has(item.id) ? "graduate-milestone-recorded" : ""}>{submittedModules.has(item.id) ? <CheckCircle2 size={18} /> : <span className="graduate-milestone-dot" />}</span><button type="button" onClick={() => selectModule(item.id, "case")}>{item.title}<small>Module {item.id} · {submittedModules.has(item.id) ? "Submission recorded; see review desk" : "Prepare evidence"}</small></button><ChevronRight size={16} /></li>)}</ol><p className="graduate-caption">An independent reviewer should challenge a model assumption, operational event, data issue, and claimed result. Record the actual review and your response in the final case reflection.</p></section>
       <section className="graduate-history panel"><h2>All written submissions</h2>{record.submissions.length ? [...record.submissions].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(item => <details key={item.id}><summary>Module {item.moduleId} · Revision {item.revision} · {item.kind} · {stamp(item.createdAt)}</summary><p className="graduate-caption">Content version: {item.contentVersion}</p>{fields.map(field => item.answers[field.key] ? <div className="graduate-history-answer" key={field.key}><h3>{field.title}</h3><p>{item.answers[field.key]}</p></div> : null)}<button type="button" className="text-button" onClick={() => selectModule(item.moduleId, "case")}>Reopen case<ArrowRight size={14} /></button></details>) : <p className="graduate-empty">Save a draft or submit a decision memo to start your evidence portfolio.</p>}</section>
     </>}
   </div>;
