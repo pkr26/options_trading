@@ -1,0 +1,116 @@
+Advanced course audit — November 14, 2026
+
+Scope and coverage
+Read the full text of COURSE.md; ADVANCED_STUDY_GUIDE.md; MASTERY_TRACKS.md;
+LESSONS_01_FOUNDATIONS.md; LESSONS_02_BEHAVIOR.md; LESSONS_03_QUANT.md;
+LESSONS_04_RESEARCH.md; RISK_AND_OPERATIONS.md; OPERATIONAL_CASEBOOK.md;
+DYNAMIC_HEDGING_LAB.md; EXECUTION_PRACTICE.md; RESEARCH_LAB.md; SOURCES.md;
+and VERIFICATION_HISTORY_2026_10_26.md. Existing verification claims were not
+used as proof. No course source files were edited.
+
+Verdict
+No confirmed critical or high-severity financial-mechanics or arithmetic errors
+found in this assigned scope. The financial explanations consistently distinguish
+expiration payoff, interim funding/assignment, model marks and executable fills.
+The advanced course has a few scope/assessment inconsistencies below. These are
+separate from optional improvements and do not establish a trading edge.
+
+Confirmed findings
+
+A1 — Medium: later research-path standards do not branch by evidence level.
+Locations: MASTERY_TRACKS.md:26–29 (especially line 28), compared with
+RESEARCH_LAB.md:61,69,75,95 and LESSONS_04_RESEARCH.md:141,177.
+The later research path explicitly accepts synthetic, published-index or licensed
+contract evidence in item 2, then unconditionally requires a trade/portfolio ledger,
+realistic quote-side/adverse fills, assignments and later frozen-rule evaluation.
+Published-index evidence cannot reconstruct those missing constituent-level fills;
+the lab and Volume 4 explicitly replace those tasks for level B. A learner following
+the later-path checklist alone can be asked to fabricate unobservable data or fail
+a path that otherwise accepts their evidence level.
+Fix: branch items 3–4 into A simulator cases, B source/index reconciliation and
+new-publication tracking, C contract ledger/execution/forward shadow evaluation,
+using the same standards as Volume 4 and the lab. Keep any separate hypothetical
+operational exercise explicitly labeled as such.
+
+A2 — Low/medium: the map promises calendar no-arbitrage checks without a lesson.
+Locations: COURSE.md:84 versus LESSONS_04_RESEARCH.md:17–21,41.
+Module 19 lists calendar/butterfly arbitrage checks. The lesson shows a positive
+forward-variance calculation and same-expiry call-strike monotonicity/convexity,
+but does not teach a calendar-check condition, a violating two-expiry example,
+or an assessment for this promised skill. A repository search found no separate
+calendar-arbitrage lesson or checker. Referring to advanced surface research at
+the end of the lab does not supply the missing worked teaching step.
+Fix: add a qualified European two-expiry test and broken-input example with
+explicit rates/dividends/forward-moneyness assumptions, plus a pass task; or
+narrow the map's scope to the strike checks actually taught. Do not teach an
+unqualified rule that any lower annualized IV at a later expiry is arbitrage.
+
+A3 — Low: map's zero-quote rejection instruction conflicts with detailed QA.
+Locations: COURSE.md:70 versus LESSONS_03_QUANT.md:215–217,221 and
+RESEARCH_LAB.md:53.
+The map says "Reject crossed/zero/stale quotes". The detailed lesson correctly
+says a zero-bid quote may be real and should be flagged to determine whether
+an exit was possible, with written rules and exclusion counts. A blanket zero-bid
+deletion can remove the evidence of illiquidity that a loss/exit study needs.
+Fix: say reject impossible quotes; flag/investigate crossed, stale and zero-bid
+conditions under prespecified rules; preserve held positions and unresolved exits.
+This finding concerns conflicting summaries, not evidence that the current lab
+silently erases positions.
+
+Checks performed
+Executed both indented Python teaching examples from LESSONS_03_QUANT.md in
+temporary directories. Outputs: simple returns [0.02, -0.0098, 0.0198, -0.0097];
+annualized sample volatility 0.2705; BSM call 7.9656; numerical delta 0.5398;
+implied volatility for a $10 ATM one-year zero-rate call 0.2513.
+
+Ran 23 additional independent arithmetic checks across foundation return/recovery,
+long/short call and put economics, covered calls/protective puts/straddles,
+Greek estimates and signed net delta, Bayes/base-rate example, multiple testing,
+forward variance, confidence interval, operational ledgers, hedge rebalance/exit,
+execution-midpoint comparison, portfolio spread risk and capstone net return.
+All passed. Also manually recomputed the worked examples and answer keys in
+Volumes 1–4 and the three operational/execution/hedge casebooks while reading.
+
+Primary sources rechecked
+1. https://www.finra.org/rules-guidance/notices/26-10
+   Confirms June 4, 2026 effective date and October 20, 2027 implementation
+   transition. The course's caution about broker-specific implementation is correct.
+2. https://www.optionseducation.org/referencelibrary/faq/options-exercise
+   Supports exercise-by-exception with OCC clearing-member/broker distinctions
+   and contrary instructions. No universal broker cutoff was assumed by course.
+3. https://www.finra.org/investors/insights/trading-options-understanding-assignment
+   Supports early assignment and the remaining-stock/long-leg operational risk.
+4. https://www.theocc.com/company-information/documents-and-archives/options-disclosure-document
+   Current landing page still identifies the June 2024 ODD and T+1 update.
+5. https://datashop.cboe.com/option-quote-intervals
+   Confirms U.S. equity/ETF/index scope, interval NBBO and optional analytics,
+   and June 22, 2026 quote-size capture change.
+6. https://www.nber.org/papers/w31833
+   Direct fetch blocked, but primary NBER search-indexed abstract confirms the
+   synthetic-option finding, 1926–2022 sample and narrowing premium statement.
+   The author's current page https://dew-becker.org/ independently corroborates
+   the related finding. Do not describe the course as proving a current market edge.
+7. https://academic.oup.com/raps/article-abstract/13/3/405/7035950
+   Direct full fetch restricted; journal's indexed abstract and original SSRN
+   paper confirm Tian/Wu title/authors and residual risk after delta hedging.
+8. Journal-indexed abstract for de Silva/So/Smith, Losing is Optional, supports
+   the stated retail earnings-option cost/risk finding; no universal fill rate follows.
+
+Optional improvements, not counted as confirmed defects
+- Probability introduction at LESSONS_03_QUANT.md:15 equates probability zero
+  with impossibility. That is a convenient finite-coin simplification; for the
+  later continuous-price models explain that individual exact outcomes can
+  have zero probability without being impossible.
+- Specify a prerequisite completion/diagnostic for plotting, numerical methods
+  and multivariable calculus before professional-quant extensions. The current
+  text already allows timeline extension and does not promise job readiness.
+- Trial the course with learners and record actual time, misconception frequency
+  and fresh-test retention; current pacing and mastery thresholds are design
+  choices rather than empirically established effectiveness claims.
+
+Limits
+No brokerage account, live execution, licensed historical quote file, personal
+tax treatment or learner performance was audited. Source status and content can
+change. Several academic sources restrict automated full-text access; indexed
+primary abstracts were checked within that limit. No claim that every external
+link was freshly fully read, or that this is external accreditation, is made.

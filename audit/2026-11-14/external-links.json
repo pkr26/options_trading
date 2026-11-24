@@ -1,0 +1,2671 @@
+{
+  "date": "2026-11-14",
+  "document_count": 38,
+  "url_count": 115,
+  "method": "Bounded HTTP GET; max 4 total and 2 per host; 15s timeout; first 160KB read",
+  "results": [
+    {
+      "url": "https://academic.oup.com/raps/article-abstract/13/3/405/7035950",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 71
+        }
+      ],
+      "status": 403,
+      "final_url": "https://academic.oup.com/raps/article-abstract/13/3/405/7035950",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.13,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://academic.oup.com/rfs/article-abstract/16/2/527/1579962",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 70
+        }
+      ],
+      "status": 403,
+      "final_url": "https://academic.oup.com/rfs/article-abstract/16/2/527/1579962",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.14,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://academic.oup.com/rfs/article-abstract/22/3/1311/1581057",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 51
+        }
+      ],
+      "status": 403,
+      "final_url": "https://academic.oup.com/rfs/article-abstract/22/3/1311/1581057",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.4,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://academic.oup.com/rfs/article-abstract/33/11/4973/5732665",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 21
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 67
+        }
+      ],
+      "status": 403,
+      "final_url": "https://academic.oup.com/rfs/article-abstract/33/11/4973/5732665",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.23,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://academic.oup.com/rof/article-abstract/30/2/489/8301159",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 21
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 67
+        }
+      ],
+      "status": 403,
+      "final_url": "https://academic.oup.com/rof/article-abstract/30/2/489/8301159",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.1,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://arxiv.org/abs/1204.0646",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 105
+        }
+      ],
+      "status": 200,
+      "final_url": "https://arxiv.org/abs/1204.0646",
+      "content_type": "text/html; charset=utf-8",
+      "title": "[1204.0646] Arbitrage-free SVI volatility surfaces",
+      "classification": "accessible",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://cdn.cboe.com/api/global/us_indices/governance/Cboe_BuyWrite_Indices_Methodology.pdf",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 221
+        }
+      ],
+      "status": 200,
+      "final_url": "https://cdn.cboe.com/resources/indices/governance/Cboe_BuyWrite_Indices_Methodology.pdf",
+      "content_type": "application/pdf",
+      "classification": "accessible",
+      "elapsed_seconds": 0.77
+    },
+    {
+      "url": "https://datashop.cboe.com/faqs",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 27
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 53
+        }
+      ],
+      "status": 200,
+      "final_url": "https://datashop.cboe.com/faqs",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Frequently Asked Questions (FAQs) | Cboe LiveVol Data Shop",
+      "classification": "accessible",
+      "elapsed_seconds": 0.75,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://datashop.cboe.com/option-eod-summary",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 22
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 27
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 53
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 219
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 19
+        }
+      ],
+      "status": 200,
+      "final_url": "https://datashop.cboe.com/option-eod-summary",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Option EOD Summary",
+      "classification": "accessible",
+      "elapsed_seconds": 1.67,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://datashop.cboe.com/option-quote-intervals",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 68
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 53
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 31
+        },
+        {
+          "path": "beginner/08_PRACTICE.md",
+          "line": 34
+        },
+        {
+          "path": "labs/README.md",
+          "line": 35
+        }
+      ],
+      "status": 200,
+      "final_url": "https://datashop.cboe.com/option-quote-intervals",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Option Quotes",
+      "classification": "accessible",
+      "elapsed_seconds": 2.63,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/",
+      "references": [
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 32
+        },
+        {
+          "path": "course-app/README.md",
+          "line": 18
+        }
+      ],
+      "status": 200,
+      "final_url": "https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/",
+      "content_type": "text/html",
+      "title": "Next.js \u00b7 Cloudflare Workers docs",
+      "classification": "accessible",
+      "elapsed_seconds": 0.4,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://docs.python.org/3/tutorial/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 53
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 17
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 117
+        }
+      ],
+      "status": 200,
+      "final_url": "https://docs.python.org/3/tutorial/",
+      "content_type": "text/html",
+      "title": "The Python Tutorial \u2014 Python 3.15.2 documentation",
+      "classification": "accessible",
+      "elapsed_seconds": 0.19,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://fred.stlouisfed.org/series/DGS3MO",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 67
+        }
+      ],
+      "status": null,
+      "classification": "verified_via_web",
+      "error": "The read operation timed out",
+      "elapsed_seconds": 15.21,
+      "secondary_check": {
+        "method": "web.open primary destination",
+        "title": "Market Yield on U.S. Treasury Securities at 3-Month Constant Maturity, Quoted on an Investment Basis (DGS3MO) | FRED | St. Louis Fed",
+        "available": true,
+        "note": "Initial bounded HTTP GET timed out; primary page successfully retrieved with web tool."
+      }
+    },
+    {
+      "url": "https://fred.stlouisfed.org/series/SOFR",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 67
+        }
+      ],
+      "status": null,
+      "classification": "verified_via_web",
+      "error": "The read operation timed out",
+      "elapsed_seconds": 15.09,
+      "secondary_check": {
+        "method": "web.open primary destination",
+        "title": "Secured Overnight Financing Rate (SOFR) | FRED | St. Louis Fed",
+        "available": true,
+        "note": "Initial bounded HTTP GET timed out; primary page successfully retrieved with web tool."
+      }
+    },
+    {
+      "url": "https://infomemo.theocc.com/infomemo/search-memo",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 5
+        },
+        {
+          "path": "SOURCES.md",
+          "line": 65
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 206
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 246
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 164
+        },
+        {
+          "path": "FOUNDATION_ANSWER_KEY.md",
+          "line": 97
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 120
+        },
+        {
+          "path": "labs/README.md",
+          "line": 33
+        }
+      ],
+      "status": 403,
+      "final_url": "https://infomemo.theocc.com/infomemo/search-memo",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.12,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 50
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/",
+      "content_type": "text/html",
+      "title": "Finance Theory I | Sloan School of Management | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.33,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/options/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 50
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 272
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/pages/video-lectures-and-slides/options/",
+      "content_type": "text/html",
+      "title": "Options | Finance Theory I | Sloan School of Management | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/15-450-analytics-of-finance-fall-2010/pages/lecture-notes/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 54
+        },
+        {
+          "path": "COURSE.md",
+          "line": 74
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 26
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 59
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 374
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/15-450-analytics-of-finance-fall-2010/pages/lecture-notes/",
+      "content_type": "text/html",
+      "title": "Lecture Notes | Analytics of Finance | Sloan School of Management | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.25,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/15-450-analytics-of-finance-fall-2010/pages/syllabus/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 54
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "COURSE.md",
+          "line": 105
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 26
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 407
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/15-450-analytics-of-finance-fall-2010/pages/syllabus/",
+      "content_type": "text/html",
+      "title": "Syllabus | Analytics of Finance | Sloan School of Management | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 52
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+      "content_type": "text/html",
+      "title": "Single Variable Calculus | Mathematics | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.22,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/pages/syllabus/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 52
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 16
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 5
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 151
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/pages/syllabus/",
+      "content_type": "text/html",
+      "title": "Syllabus | Introduction to Probability and Statistics | Mathematics | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/18-642-topics-in-mathematics-with-applications-in-finance-fall-2024/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 55
+        },
+        {
+          "path": "COURSE.md",
+          "line": 105
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 105
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/18-642-topics-in-mathematics-with-applications-in-finance-fall-2024/",
+      "content_type": "text/html",
+      "title": "Topics in Mathematics with Applications in Finance | Mathematics | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.26,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://ocw.mit.edu/courses/6-100l-introduction-to-cs-and-programming-using-python-fall-2022/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 53
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 17
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 117
+        }
+      ],
+      "status": 200,
+      "final_url": "https://ocw.mit.edu/courses/6-100l-introduction-to-cs-and-programming-using-python-fall-2022/",
+      "content_type": "text/html",
+      "title": "Introduction to CS and Programming using Python | Electrical Engineering and Computer Science | MIT OpenCourseWare",
+      "classification": "accessible",
+      "elapsed_seconds": 0.25,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://optionmetrics.com/united-states/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 69
+        }
+      ],
+      "status": 200,
+      "final_url": "https://optionmetrics.com/united-states/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "IvyDB US | Historical Options and IV Data",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://optionsfacts.cboe.com/",
+      "references": [
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 42
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 195
+        }
+      ],
+      "status": 200,
+      "final_url": "https://optionsfacts.cboe.com/",
+      "content_type": "text/html; charset=utf-8",
+      "title": "The Facts About Options",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 72
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 22
+        },
+        {
+          "path": "COURSE.md",
+          "line": 80
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 32
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 76
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 155
+        }
+      ],
+      "status": 403,
+      "final_url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://prd-web.optionseducation.org/advancedconcepts/delta",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 13
+        }
+      ],
+      "status": 200,
+      "final_url": "https://prd-web.optionseducation.org/advancedconcepts/delta",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Delta",
+      "classification": "accessible",
+      "elapsed_seconds": 0.89,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://prd-web.optionseducation.org/advancedconcepts/volatility-the-greeks",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 17
+        }
+      ],
+      "status": 200,
+      "final_url": "https://prd-web.optionseducation.org/advancedconcepts/volatility-the-greeks",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Volatility & the Greeks",
+      "classification": "accessible",
+      "elapsed_seconds": 0.57,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://prd-web.optionseducation.org/news/april-webinar-key-takeaways-understanding-volatility-and-options-skew",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 64
+        }
+      ],
+      "status": 200,
+      "final_url": "https://prd-web.optionseducation.org/news/april-webinar-key-takeaways-understanding-volatility-and-options-skew",
+      "content_type": "text/html; charset=utf-8",
+      "title": "April Webinar Key Takeaways: Understanding Volatility and Options Skew",
+      "classification": "accessible",
+      "elapsed_seconds": 0.48,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://prd-web.optionseducation.org/options-quotes-calculators",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 35
+        }
+      ],
+      "status": 200,
+      "final_url": "https://prd-web.optionseducation.org/options-quotes-calculators",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Quotes & Calculators",
+      "classification": "accessible",
+      "elapsed_seconds": 0.55,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://prd-web.optionseducation.org/theoptionseducationcenter/occ-learning",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 26
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 53
+        },
+        {
+          "path": "COURSE.md",
+          "line": 29
+        },
+        {
+          "path": "COURSE.md",
+          "line": 46
+        }
+      ],
+      "status": 200,
+      "final_url": "https://prd-web.optionseducation.org/theoptionseducationcenter/occ-learning",
+      "content_type": "text/html; charset=utf-8",
+      "title": "OCC Learning",
+      "classification": "accessible",
+      "elapsed_seconds": 0.51,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.cboe.com/optionsinstitute",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 27
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/optionsinstitute",
+      "content_type": "text/html; charset=utf-8",
+      "title": "The Options Institute | Cboe",
+      "classification": "accessible",
+      "elapsed_seconds": 0.67,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.cboe.com/optionsinstitute/learningportal/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 27
+        },
+        {
+          "path": "COURSE.md",
+          "line": 29
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/optionsinstitute/learningportal/",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Institute Learning Portal | Cboe",
+      "classification": "accessible",
+      "elapsed_seconds": 0.52,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.cboe.com/optionsinstitute/tools/trade-optimizer/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 37
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/optionsinstitute/tools/trade-optimizer/",
+      "content_type": "text/html; charset=utf-8",
+      "title": "The Options Institute Tools | Cboe",
+      "classification": "accessible",
+      "elapsed_seconds": 0.62,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.cboe.com/solutions/options-analytics/portfolio-margin-analytics/stress-tests/",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 87
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 187
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/solutions/options-analytics/portfolio-margin-analytics/stress-tests/",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Cboe Options Analytics Stress Test | Cboe",
+      "classification": "accessible",
+      "elapsed_seconds": 1.58,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.cboe.com/tradable_products/sp_500/spx_weekly_options/specifications",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 55
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 18
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 17
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 29
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 37
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 158
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 27
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 122
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/tradable_products/sp_500/spx_weekly_options/specifications",
+      "content_type": "text/html; charset=utf-8",
+      "title": "S&P 500 Weeklys Options",
+      "classification": "accessible",
+      "elapsed_seconds": 0.45,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.cboe.com/tradable_products/vix/vix_historical_data",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 64
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/tradable_products/vix/vix_historical_data",
+      "content_type": "text/html; charset=utf-8",
+      "title": "VIX Index Historical Data",
+      "classification": "accessible",
+      "elapsed_seconds": 0.53,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.cboe.com/us/indices/dashboard/bxm/",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 221
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.cboe.com/us/indices/dashboard/bxm/",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Cboe Global Indices: BXM Index Dashboard",
+      "classification": "accessible",
+      "elapsed_seconds": 0.58,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.cmegroup.com/articles/faqs/trading-simulator-faq.html",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 42
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 20
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 30
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.cmegroup.com/articles/faqs/trading-simulator-faq.html",
+      "content_type": "application/json",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.16
+    },
+    {
+      "url": "https://www.cmegroup.com/education/courses/curriculum-all-about-options",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 41
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 221
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.cmegroup.com/education/courses/curriculum-all-about-options",
+      "content_type": "application/json",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.11
+    },
+    {
+      "url": "https://www.cmegroup.com/education/courses/introduction-to-options",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 41
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.cmegroup.com/education/courses/introduction-to-options",
+      "content_type": "application/json",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.15
+    },
+    {
+      "url": "https://www.finra.org/investors/insights/frequent-intraday-trading",
+      "references": [
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 148
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/investors/insights/frequent-intraday-trading",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Frequent Intraday Trading: Understanding the Basics | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.finra.org/investors/insights/intraday-margin-requirements",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 76
+        },
+        {
+          "path": "COURSE.md",
+          "line": 99
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 38
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 258
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 288
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/investors/insights/intraday-margin-requirements",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Understanding the New Intraday Margin Requirements | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.33,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.finra.org/investors/insights/trading-options-understanding-assignment",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 5
+        },
+        {
+          "path": "SOURCES.md",
+          "line": 29
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 18
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 113
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 124
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 201
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 15
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 27
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 28
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 160
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 193
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 25
+        },
+        {
+          "path": "FOUNDATION_ANSWER_KEY.md",
+          "line": 94
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 130
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 52
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 88
+        },
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 105
+        },
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 123
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/investors/insights/trading-options-understanding-assignment",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Trading Options: Understanding Assignment | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.32,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.finra.org/investors/investing/investment-products/options",
+      "references": [
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 148
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/investors/investing/investment-products/options",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Options | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.33,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.finra.org/rules-guidance/notices/26-10",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 19
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 38
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 28
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/rules-guidance/notices/26-10",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Regulatory Notice 26-10 | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.27,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2360",
+      "references": [
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 13
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.finra.org/rules-guidance/rulebooks/finra-rules/2360",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "2360. Options | FINRA.org",
+      "classification": "accessible",
+      "elapsed_seconds": 0.37,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.ibkrguides.com/brokerportal/aboutpapertradingaccounts.htm",
+      "references": [
+        {
+          "path": "beginner/08_PRACTICE.md",
+          "line": 15
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.ibkrguides.com/brokerportal/aboutpapertradingaccounts.htm",
+      "content_type": "text/html",
+      "title": "About Paper Trading Accounts",
+      "classification": "accessible",
+      "elapsed_seconds": 0.35,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.ibkrguides.com/orgportal/aboutpapertradingaccount.htm",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 39
+        },
+        {
+          "path": "SOURCES.md",
+          "line": 40
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 20
+        },
+        {
+          "path": "COURSE.md",
+          "line": 19
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 242
+        },
+        {
+          "path": "EXECUTION_PRACTICE.md",
+          "line": 3
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 256
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 257
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 30
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 142
+        },
+        {
+          "path": "labs/README.md",
+          "line": 27
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.ibkrguides.com/orgportal/aboutpapertradingaccount.htm",
+      "content_type": "text/html",
+      "title": "About Paper Trading Accounts",
+      "classification": "accessible",
+      "elapsed_seconds": 0.17,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.interactivebrokers.com/campus/traders-academy/finance-courses/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 28
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 20
+        },
+        {
+          "path": "COURSE.md",
+          "line": 46
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.interactivebrokers.com/campus/traders-academy/finance-courses/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Traders' Academy - All Finance Courses | IBKR Campus",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.interactivebrokers.com/campus/traders-academy/options/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 28
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.interactivebrokers.com/campus/traders-academy/options/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Options | IBKR Campus",
+      "classification": "accessible",
+      "elapsed_seconds": 0.35,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.interactivebrokers.com/campus/trading-course/ibkrs-risk-navigator/",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 87
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.interactivebrokers.com/campus/trading-course/ibkrs-risk-navigator/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "IBKR\u2019s Risk Navigator\u00a9 | Trading Course",
+      "classification": "accessible",
+      "elapsed_seconds": 1.29,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.interactivebrokers.com/campus/trading-course/options-strategy-research-and-backtesting-with-orats/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 38
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.interactivebrokers.com/campus/trading-course/options-strategy-research-and-backtesting-with-orats/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Options Strategy Research & Backtesting with ORATS",
+      "classification": "accessible",
+      "elapsed_seconds": 1.39,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.interactivebrokers.com/campus/trading-lessons/how-to-open-an-ibkr-paper-trading-account/",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 39
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.interactivebrokers.com/campus/trading-lessons/how-to-open-an-ibkr-paper-trading-account/",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "How to Open an IBKR Paper Trading Account | Trading Lesson",
+      "classification": "accessible",
+      "elapsed_seconds": 0.39,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-14",
+      "references": [
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 87
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-14",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Understanding Order Types \u2013 Investor Bulletin | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.32,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-29",
+      "references": [
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 16
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 31
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 250
+        },
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 148
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-29",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Investor Bulletin: Understanding Margin Accounts | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.25,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-63",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 23
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 7
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 36
+        },
+        {
+          "path": "COURSE.md",
+          "line": 29
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 152
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 12
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 24
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 3
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 105
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 24
+        },
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 79
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 96
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 11
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 11
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-63",
+      "content_type": "text/html; charset=utf-8",
+      "title": "An Introduction to Options \u2013 Investor Bulletin | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.2,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-77",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 24
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 18
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 13
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 35
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 15
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-77",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Opening an Options Account \u2013 Investor Bulletin | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.29,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins/leveraged-investing-strategies-know-risks-using-these-advanced-investment-tools",
+      "references": [
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 25
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins/leveraged-investing-strategies-know-risks-using-these-advanced-investment-tools",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Leveraged Investing Strategies \u2013 Know the Risks Before Using These Advanced Investment Tools | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.3,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/getting-started/asset-allocation",
+      "references": [
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 70
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/getting-started/asset-allocation",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Asset Allocation and Diversification | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.2,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/ask-price",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 113
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/ask-price",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Bid Price/Ask Price | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.22,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/exchange-traded-fund-etf",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 79
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/exchange-traded-fund-etf",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Exchange-Traded Fund (ETF) | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.27,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/market-index",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 79
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/market-index",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Market Index | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.31,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/market-participants",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 96
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/market-participants",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Market Participants | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.23,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/types-orders",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 130
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/types-orders",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Types of Orders | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products",
+      "references": [
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 13
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Investment Products | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.22,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks",
+      "references": [
+        {
+          "path": "START_HERE.md",
+          "line": 20
+        },
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 28
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Stocks - FAQs | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.27,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/introduction-investing/investing-basics/what-risk",
+      "references": [
+        {
+          "path": "beginner/01_MARKETS.md",
+          "line": 11
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/introduction-investing/investing-basics/what-risk",
+      "content_type": "text/html; charset=utf-8",
+      "title": "What is Risk? | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.2,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.investor.gov/protect-your-investments/fraud/protect-your-money",
+      "references": [
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 129
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.investor.gov/protect-your-investments/fraud/protect-your-money",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Protect Your Money: How to Avoid Investment Scams | Investor.gov",
+      "classification": "accessible",
+      "elapsed_seconds": 0.26,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.irs.gov/forms-pubs/about-form-6781",
+      "references": [
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 18
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 39
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.irs.gov/forms-pubs/about-form-6781",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "About Form 6781, Gains and Losses From Section 1256 Contracts and Straddles | Internal Revenue Service",
+      "classification": "accessible",
+      "elapsed_seconds": 0.34,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.irs.gov/publications/p550",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 19
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 18
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 39
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 258
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 29
+        },
+        {
+          "path": "beginner/07_RISK.md",
+          "line": 150
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.irs.gov/publications/p550",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Publication 550 (2025), Investment Income and Expenses | Internal Revenue Service",
+      "classification": "accessible",
+      "elapsed_seconds": 0.27,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.journals.uchicago.edu/doi/10.1086/260062",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 59
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.journals.uchicago.edu/doi/10.1086/260062",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.21,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.khanacademy.org/math/statistics-probability",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 51
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 16
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 5
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.khanacademy.org/math/statistics-probability",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Client Challenge",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.14,
+      "note": "HTTP200 returned a challenge page; content availability not established.",
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.khanacademy.org/mission/algebra-basics",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 51
+        },
+        {
+          "path": "COURSE.md",
+          "line": 63
+        },
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 5
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.khanacademy.org/mission/algebra-basics",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Client Challenge",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.11,
+      "note": "HTTP200 returned a challenge page; content availability not established.",
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.mheducation.com/highered/mhp/product/option-volatility-pricing-advanced-trading-strategies-techniques-2nd-edition.html",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 57
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.mheducation.com/highered/mhp/product/option-volatility-pricing-advanced-trading-strategies-techniques-2nd-edition.html",
+      "content_type": "text/html;charset=utf-8",
+      "title": "Option Volatility and Pricing: Advanced Trading Strategies and Techniques, 2nd Edition",
+      "classification": "accessible",
+      "elapsed_seconds": 1.63,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.nber.org/papers/w31833",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 22
+        },
+        {
+          "path": "COURSE.md",
+          "line": 80
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 51
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.nber.org/papers/w31833",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Risk Preferences Implied by Synthetic Options | NBER",
+      "classification": "accessible",
+      "elapsed_seconds": 0.71,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/Options-Quotes-Calculators",
+      "references": [
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 52
+        },
+        {
+          "path": "COURSE.md",
+          "line": 46
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/options-quotes-calculators",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Quotes & Calculators",
+      "classification": "accessible",
+      "elapsed_seconds": 0.77,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/delta",
+      "references": [
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 26
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 75
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/delta",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Delta",
+      "classification": "accessible",
+      "elapsed_seconds": 0.34,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/equity-vs-index-options",
+      "references": [
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 13
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 7
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 70
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/equity-vs-index-options",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Equity vs. Index Options",
+      "classification": "accessible",
+      "elapsed_seconds": 0.46,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/gamma",
+      "references": [
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 26
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 91
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/gamma",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Gamma",
+      "classification": "accessible",
+      "elapsed_seconds": 0.42,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/put-call-parity",
+      "references": [
+        {
+          "path": "LESSONS_03_QUANT.md",
+          "line": 264
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/put-call-parity",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Put/Call Parity",
+      "classification": "accessible",
+      "elapsed_seconds": 0.45,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/theta",
+      "references": [
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 26
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 43
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/theta",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Theta",
+      "classification": "accessible",
+      "elapsed_seconds": 0.35,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/understanding-options-greeks",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 11
+        },
+        {
+          "path": "DYNAMIC_HEDGING_LAB.md",
+          "line": 3
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/understanding-options-greeks",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Understanding Options Greeks",
+      "classification": "accessible",
+      "elapsed_seconds": 0.43,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/vega",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 58
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 26
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 123
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/vega",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Vega",
+      "classification": "accessible",
+      "elapsed_seconds": 0.36,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/advancedconcepts/volatility-the-greeks",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 58
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 15
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 59
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 107
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/advancedconcepts/volatility-the-greeks",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Volatility & the Greeks",
+      "classification": "accessible",
+      "elapsed_seconds": 5.04,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/news/may-office-hours-faqs",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 103
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/news/may-office-hours-faqs",
+      "content_type": "text/html; charset=utf-8",
+      "title": "May Office Hours FAQs: Implied Volatility, Greek Exposure, and Market Maker Activity",
+      "classification": "accessible",
+      "elapsed_seconds": 4.75,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/news/splits-happen",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 33
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 164
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 27
+        },
+        {
+          "path": "FOUNDATION_ANSWER_KEY.md",
+          "line": 88
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 113
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 124
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/news/splits-happen",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Splits Happen",
+      "classification": "accessible",
+      "elapsed_seconds": 0.41,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/oic-profit-and-loss-simulator",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 36
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/oic-profit-and-loss-simulator",
+      "content_type": "text/html; charset=utf-8",
+      "title": "OIC Profit and Loss Simulator",
+      "classification": "accessible",
+      "elapsed_seconds": 0.42,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/options-quotes-calculators",
+      "references": [
+        {
+          "path": "ADVANCED_STUDY_GUIDE.md",
+          "line": 47
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 20
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 31
+        },
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 203
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 60
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/options-quotes-calculators",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Quotes & Calculators",
+      "classification": "accessible",
+      "elapsed_seconds": 0.35,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/optionsoverview/exercising-options",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 45
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 18
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 87
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 14
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 26
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 36
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 152
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 25
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 34
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 102
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/optionsoverview/exercising-options",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Exercising Options",
+      "classification": "accessible",
+      "elapsed_seconds": 0.37,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/optionsoverview/getting-started-with-options",
+      "references": [
+        {
+          "path": "beginner/08_PRACTICE.md",
+          "line": 166
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/optionsoverview/getting-started-with-options",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Getting Started with Options",
+      "classification": "accessible",
+      "elapsed_seconds": 0.44,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/optionsoverview/options-basics",
+      "references": [
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 96
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 62
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/optionsoverview/options-basics",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Basics",
+      "classification": "accessible",
+      "elapsed_seconds": 0.4,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/optionsoverview/options-pricing",
+      "references": [
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 26
+        },
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 11
+        },
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 45
+        },
+        {
+          "path": "beginner/04_PRICES.md",
+          "line": 27
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/optionsoverview/options-pricing",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Pricing",
+      "classification": "accessible",
+      "elapsed_seconds": 0.41,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/optionsoverview/what-is-an-option",
+      "references": [
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 11
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 79
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/optionsoverview/what-is-an-option",
+      "content_type": "text/html; charset=utf-8",
+      "title": "What is an Option?",
+      "classification": "accessible",
+      "elapsed_seconds": 0.34,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/referencelibrary/faq/basics",
+      "references": [
+        {
+          "path": "LESSONS_02_BEHAVIOR.md",
+          "line": 195
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 138
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/referencelibrary/faq/basics",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Basics",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/referencelibrary/faq/options-assignment",
+      "references": [
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 14
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 28
+        },
+        {
+          "path": "beginner/08_PRACTICE.md",
+          "line": 89
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/referencelibrary/faq/options-assignment",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Assignment",
+      "classification": "accessible",
+      "elapsed_seconds": 0.47,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/referencelibrary/faq/options-exercise",
+      "references": [
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 156
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 25
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 86
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/referencelibrary/faq/options-exercise",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options Exercise",
+      "classification": "accessible",
+      "elapsed_seconds": 0.52,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies-en",
+      "references": [
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 203
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies-en",
+      "content_type": "text/html; charset=utf-8",
+      "title": "All Strategies",
+      "classification": "accessible",
+      "elapsed_seconds": 0.47,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/bull-call-spread-debit-call-spread",
+      "references": [
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 101
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/bull-call-spread-debit-call-spread",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Bull Call Spread (Debit Call Spread)",
+      "classification": "accessible",
+      "elapsed_seconds": 0.32,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/bull-put-spread-credit-put-spread",
+      "references": [
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 119
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/bull-put-spread-credit-put-spread",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Bull Put Spread (Credit Put Spread)",
+      "classification": "accessible",
+      "elapsed_seconds": 0.46,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/cash-secured-put",
+      "references": [
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 130
+        },
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 83
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/cash-secured-put",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Cash-Secured Put",
+      "classification": "accessible",
+      "elapsed_seconds": 0.37,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/covered-call-buy-write",
+      "references": [
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 65
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/covered-call-buy-write",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Covered Call (Buy/Write)",
+      "classification": "accessible",
+      "elapsed_seconds": 0.41,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/long-call",
+      "references": [
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 28
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 28
+        },
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 13
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/long-call",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Long Call",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/long-put",
+      "references": [
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 156
+        },
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 62
+        },
+        {
+          "path": "beginner/02_CONTRACTS.md",
+          "line": 45
+        },
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 29
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/long-put",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Long Put",
+      "classification": "accessible",
+      "elapsed_seconds": 0.5,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/long-straddle",
+      "references": [
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 139
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/long-straddle",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Long Straddle",
+      "classification": "accessible",
+      "elapsed_seconds": 0.32,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/naked-call-uncovered-call-short-call",
+      "references": [
+        {
+          "path": "beginner/03_PROFIT.md",
+          "line": 113
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/naked-call-uncovered-call-short-call",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Naked Call (Uncovered Call, Short Call)",
+      "classification": "accessible",
+      "elapsed_seconds": 0.33,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.optionseducation.org/strategies/all-strategies/protective-put-married-put",
+      "references": [
+        {
+          "path": "beginner/06_STRATEGIES.md",
+          "line": 47
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.optionseducation.org/strategies/all-strategies/protective-put-married-put",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Protective Put (Married Put)",
+      "classification": "accessible",
+      "elapsed_seconds": 0.38,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.pearson.com/en-us/subject-catalog/p/options-futures-and-other-derivatives/P200000005938/9780136939979",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 56
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.pearson.com/en-us/subject-catalog/p/options-futures-and-other-derivatives/P200000005938/9780136939979",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Options, Futures, and Other Derivatives",
+      "classification": "accessible",
+      "elapsed_seconds": 1.21,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.sec.gov/about/reports-publications/investorpubsonlinetipshtm",
+      "references": [
+        {
+          "path": "EXECUTION_PRACTICE.md",
+          "line": 54
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.sec.gov/about/reports-publications/investorpubsonlinetipshtm",
+      "content_type": "text/html",
+      "title": "SEC.gov | Request Rate Threshold Exceeded",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.28,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.sec.gov/search-filings",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 66
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.sec.gov/search-filings",
+      "content_type": "text/html",
+      "title": "SEC.gov | Request Rate Threshold Exceeded",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.19,
+      "bot_marker_present": false
+    },
+    {
+      "url": "https://www.theocc.com/company-information/documents-and-archives/options-disclosure-document",
+      "references": [
+        {
+          "path": "OPERATIONAL_CASEBOOK.md",
+          "line": 5
+        },
+        {
+          "path": "ADVANCED_STUDY_GUIDE.md",
+          "line": 16
+        },
+        {
+          "path": "SOURCES.md",
+          "line": 25
+        },
+        {
+          "path": "VERIFICATION_HISTORY_2026_10_26.md",
+          "line": 13
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 36
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 51
+        },
+        {
+          "path": "ADVANCED_FIRST_WEEK.md",
+          "line": 58
+        },
+        {
+          "path": "COURSE.md",
+          "line": 29
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 11
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 37
+        },
+        {
+          "path": "RISK_AND_OPERATIONS.md",
+          "line": 79
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 3
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 15
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 105
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 166
+        },
+        {
+          "path": "LESSONS_01_FOUNDATIONS.md",
+          "line": 250
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 119
+        },
+        {
+          "path": "VERIFICATION_REPORT.md",
+          "line": 24
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 7
+        },
+        {
+          "path": "beginner/05_OPERATIONS.md",
+          "line": 120
+        },
+        {
+          "path": "beginner/README.md",
+          "line": 40
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.theocc.com/company-information/documents-and-archives/options-disclosure-document",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.12,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest/open-interest",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 65
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest/open-interest",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.13,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest/volume-query",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 65
+        },
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 53
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.theocc.com/market-data/market-data-reports/volume-and-open-interest/volume-query",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.13,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.theocc.com/risk-management/margin-methodology",
+      "references": [
+        {
+          "path": "RESEARCH_LAB.md",
+          "line": 87
+        },
+        {
+          "path": "LESSONS_04_RESEARCH.md",
+          "line": 187
+        }
+      ],
+      "status": 403,
+      "final_url": "https://www.theocc.com/risk-management/margin-methodology",
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Just a moment...",
+      "classification": "restricted_or_rate_limited",
+      "elapsed_seconds": 0.18,
+      "bot_marker_present": true
+    },
+    {
+      "url": "https://www.wiley.com/en-us/-p-9781118416723",
+      "references": [
+        {
+          "path": "SOURCES.md",
+          "line": 58
+        }
+      ],
+      "status": 200,
+      "final_url": "https://www.wiley.com/en-us/-p-9781118416723",
+      "content_type": "text/html; charset=utf-8",
+      "title": "Volatility Trading, + Website, 2nd Edition | Wiley",
+      "classification": "accessible",
+      "elapsed_seconds": 0.83,
+      "bot_marker_present": false
+    }
+  ],
+  "summary": {
+    "restricted_or_rate_limited": 19,
+    "accessible": 94,
+    "verified_via_web": 2
+  },
+  "confirmed_broken_destinations": [],
+  "limitations": "Availability scan only; HTTP success is not full claim verification. Challenge pages counted restricted even when HTTP200. Blocked URLs are not classified as broken. Body bot markers may reflect ordinary CAPTCHA integrations; page titles and HTTP status determined classification."
+}

@@ -1,0 +1,49 @@
+OPTIONS COURSE: EXECUTABLE LABORATORY AND PACKAGING AUDIT
+Review date: November 14, 2026 (client date)
+Reviewer scope: labs/options_lab.py, labs/test_options_lab.py, labs/README.md, all six labs/data files; scripts/check_materials.py, scripts/generate_foundation_cases.py; course-app/scripts/import-course.mjs and build-verified.sh; course-app/tests/content.test.mjs; hosted public copies, committed content snapshots and offline archive. No course source files were edited.
+
+CONFIRMED FINDINGS
+
+L1 — Medium (P2): Ledger construction bypasses the integer/finite invariants enforced by trade methods.
+Location: labs/options_lab.py:85–90 (Ledger fields), :109–127 (settlement); duplicated in course-app/public/labs/options_lab.py.
+Evidence: Ledger(Contract('C100',100,'call'), cash=10000, option_qty=0.5).settle(110) succeeds and leaves cash=5000.0 and shares=50.0. option_qty=True likewise settles as one contract. Opening cash=float('nan') is accepted, and equity(...) returns NaN. This contradicts the broad statement in labs/README.md:40 that the implementation rejects fractional option quantities. Python type annotations do not validate dataclass initialization. trade_option validates new quantities, but cannot repair an invalid opening ledger.
+Impact: learners reconstructing a ledger from imported positions can obtain plausible but impossible standard-option settlements, or silently nonfinite portfolio equity. The supplied default fixtures do not trigger it.
+Suggested fix: add Ledger.__post_init__ to validate finite opening cash, non-boolean integer shares and option_qty (zero allowed), and validate at mutation/settlement boundaries if direct mutation remains public. Add a constructor regression case and ensure rejected operations leave state unchanged.
+Minimal reproduction:
+  l = Ledger(Contract('C100', 100, 'call'), cash=10000, option_qty=0.5)
+  l.settle(110)
+  print(l.cash, l.shares)   # 5000.0 50.0; should reject fractional option_qty
+
+L2 — Low (P3): Quote validation permits fractional, boolean and nonfinite displayed sizes.
+Location: labs/options_lab.py:246–254 (Quote), :264–274 (quote_flags), :318 (filled=min(quantity,size)); duplicate hosted Python source.
+Evidence: q=replace(load_quotes(DATA/'quotes.csv')[0], ask_size=0.5) gives quote_flags(q)==[]; simulate_order(q,'buy',1,3) returns ModeledFill(status='modeled_partial',quantity=0.5,price=2.2,fees=0.5). ask_size=float('nan') also passes flags, and the same order reports a full fill. ask_size=True passes as valid size.
+Impact: the public simulator can create a fractional standard-option fill or assume liquidity from an invalid quote. CSV loading uses int(), so the bundled CSV route is protected; direct Quote construction/replacement is not.
+Suggested fix: explicitly require each visible size to be a non-boolean integer, with a separate absent/zero-size policy. Validate both sizes before computing fill quantities. Add cases for fractional, boolean, NaN and infinity sizes.
+
+NO CONFIRMED NUMERICAL OR PACKAGING ERRORS IN THE BUNDLED HAPPY PATH
+- All 20 supplied Python unit tests pass (python3 -m unittest discover -s labs -v).
+- Base modeled P&L: D1 +$38, D2 -$42, D3 +$3, D4 +$33; D5 entry unfilled, D6 quote rejected. Four closed trade totals: optimistic +$87, base +$32, adverse -$8. Unfilled/rejected decisions remain in the ledger.
+- Independently checked 1,200 generated changed-number payoff cases across seeds 0, 7 and 20261026 using a separate Decimal cash-flow calculation. Each generated P&L and fee-inclusive break-even reconciles, as do all bounded maximum losses. No generated question/answer files were written.
+- Fixture manifest hashes pass. All six CSV/JSON files were inspected. Data are expressly synthetic; decisions and daily observations are expressly separate invented exercises. Forecast baseline is 5/12 from development only.
+- Default demo output omits final Brier outcomes. check_manifest reads the final file only to hash it; this is consistent with withholding outcome evaluation, although the file remains physically accessible to a learner.
+- check_materials.py: 39 Markdown files and all 344 local file links pass. There are no authored fragment/title/angle-bracket link forms currently exposing the link checker's simplified parser limitations.
+- Source/public lab code, test code, fixtures and scripts are byte-identical. README is intentionally not a public attachment; it is present as a library resource and in the ZIP.
+- Offline archive has 49 unique entries, valid CRCs, and no unresolved internal Markdown targets. It omits application state and replaces the personal learning record with a blank template. All non-overridden archive bytes match current source files.
+- Ran import-course.mjs in an isolated temporary copy without modifying the workspace. Output: 8 modules, 64 lessons, 29 reference documents, 10 attachments and 49 archive files. Both committed JSON files and ZIP are byte-identical to a fresh import:
+  content/course.json SHA256 92e51228f74862c206ba1bb205b98ffc2b4ed41fe3eee4ec566ccedf2bbe1595
+  content/library.json SHA256 6285f2db214b805e653359eef0fdc1e3d79a2d006e6c12221c8d7a4135a51e5f
+  public/downloads/options-course.zip SHA256 f3e3b2ef3afd3eafcd567b2005dca9a6611fde1a288a2e9689035bd86f347531
+- course-app Git working tree was clean before audit. Root curriculum directory is not itself a Git repository. Audit unit runs created only normal ignored __pycache__ files.
+
+SCOPE/LIMITS AND OPTIONAL IMPROVEMENTS (NOT CONFIRMED DEFECTS)
+- The dividend wording in Volumes 3 and 4 is consistent. european_price has a dividend_yield parameter at labs/options_lab.py:134–162. stress_portfolio has none and invokes pricing with rate=0 and default q=0 at :455–457; therefore Volume 4:191 correctly says the simple stress wrapper omits dividends. Volume 3:376 describes the broader lab, whose European call/put pricer is dividend-aware.
+- Complete single-contract terms are in manifest.json. Quote/decision rows join by option_id. toy_backtest is expressly restricted to one synthetic long contract and is not a contract-lifecycle replay engine; it does not cross-check expiry or adjusted deliverables. Do not present it as a generic historical engine.
+- daily_observations.csv has dates but no forecast-availability time, event definition or outcome horizon. For an explicitly invented Brier exercise this is not evidence of look-ahead. A chronology teaching extension should add those fields before claiming to validate point-in-time forecasts.
+- Current content tests check imported shape but not course/library source freshness; this audit independently demonstrated freshness with an isolated import. A check-only import comparison would protect future releases.
+- No live execution calibration, licensed data audit, broker funding model or production deployment was performed by this lab review.
+
+PRIMARY SOURCE CROSS-CHECK
+OCC equity options specifications confirm standard equity contract unit of 100 shares, premium quotation in points with $100 per point, and product-specific deliverable adjustments. This supports treating fractional modeled contract quantities as invalid in this standard-contract classroom interface; adjusted deliverables remain distinct from fractional contract counts.
+https://www.theocc.com/clearance-and-settlement/clearing/equity-options-product-specifications
+SEC options bulletin independently illustrates multiplying quoted premium by 100 for a standard contract.
+https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-63

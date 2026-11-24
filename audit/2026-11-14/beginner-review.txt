@@ -1,0 +1,42 @@
+BEGINNER AND FOUNDATION AUDIT — 2026-11-14, America/Phoenix
+
+Scope read in full: README.md; START_HERE.md; HOW_TO_STUDY.md; all 12 beginner/*.md files (8 teaching modules, README, glossary, workbook, review plan); FOUNDATION_MATH_BRIDGE.md; FOUNDATION_ASSESSMENTS.md; FOUNDATION_ANSWER_KEY.md; ADVANCED_FIRST_WEEK.md; LEARNING_RECORD_TEMPLATE.md; MY_LEARNING_RECORD.md. No source modifications were made.
+
+Overall finding: the assigned beginner/foundation teaching is technically sound under its stated fictional, standard-contract, expiration-accounting assumptions. No critical or high-severity mechanics, mathematical or safety defect was found. Safety treatment correctly distinguishes option premium losses from later stock exposure, premium multipliers from deliverables, closing from writing, intact payoff bounds from operational funding, displayed prices from fills, and synthetic/paper results from evidence of a live edge.
+
+CONFIRMED FINDING B1 — MEDIUM (assessment navigation)
+File: MY_LEARNING_RECORD.md:15,21,30.
+The preserved personal learning record still labels START_HERE.md as the seven-day introduction and, on line 30, requires “All ten START_HERE.md questions.” START_HERE.md now contains the beginner first-day routine and no ten-question exam. ADVANCED_FIRST_WEEK.md contains the referenced seven-day plan and ten-question check. This is a semantic broken link; an existence-only Markdown link checker will pass it. A learner following the record cannot locate the required assessment directly, and the starting record routes an advanced task through the beginner entry page.
+Suggested fix: retarget those three links, and the literal START_HERE.md label in the gate row, to ADVANCED_FIRST_WEEK.md; retain dates, self-reported profile, pending statuses and evidence rows. Optionally add a separate beginner-path next step without rewriting historical evidence.
+
+OPTIONAL IMPROVEMENTS (not defects)
+1. Most checkpoint remediation depends on a tutor supplying changed numbers (beginner/01_MARKETS.md:164, beginner/02_CONTRACTS.md:164, beginner/03_PROFIT.md:164 and later module retry paragraphs). The course is usable independently, but a small withheld-answer retest bank for beginner concepts would reduce tutor dependence. The current generator covers only advanced/foundation four-position expiration arithmetic, not beginner conceptual and operational retests. Existing app alternate forms mitigate this only twice; HOW_TO_STUDY.md correctly acknowledges reuse is review rather than unseen evidence.
+2. Lessons 31 and 63 are deliberately larger than surrounding lessons. Lesson 31 introduces both vega and rho, while Lesson 63 contains four capstone cases. Existing documents explicitly allow split sessions and capstone extra days, so the 84-session baseline is qualified and not a mathematical error. Consider pre-splitting these in a future learner-facing schedule if actual completion times support it.
+3. The math-bridge optional sample function uses assert statements as input checks and accepts bool as int (FOUNDATION_MATH_BRIDGE.md:42-49). It is labeled a tiny classroom calculation and not a simulator, so this is not a course safety defect. If reused in executable tools, replace assert validation with explicit exceptions and reject booleans to match laboratory conventions.
+
+INDEPENDENT CHECKS
+- Parsed and independently recomputed all 40 FOUNDATION_ASSESSMENTS.md payoff rows against FOUNDATION_ANSWER_KEY.md with Decimal arithmetic. All 200 checked fields matched exactly: signed premium cash, intrinsic value/obligation, fee-adjusted P&L, fee-adjusted break-even and maximum-loss classification/amount.
+- Read and hand-recomputed beginner worked examples, try-it keys and checkpoint calculations, including protective puts, covered calls, both verticals, expected values, win-rate losses, drawdown recovery, whole-contract risk limits, partial fills and all four Lesson 63 capstone ledgers. No numerical discrepancy identified.
+- Verified 64 lesson headings are consecutive 1–64, with eight lessons and eight try-it prompts per teaching module.
+- Verified glossary has the claimed 40 grouped entries.
+- Verified review plan arithmetic: 64 lessons + 8 checkpoints + 12 reviews = 84; table totals 11+10+11+10+11+10+11+10 = 84; 84/5 = 16.8 weeks, with extra retries/capstone sessions explicitly disclosed.
+- Verified ADVANCED_FIRST_WEEK.md daily hours sum to ten.
+
+PRIMARY SOURCE VERIFICATION (read during this audit; URLs usable in final report)
+- https://www.optionseducation.org/referencelibrary/faq/options-exercise
+  Confirms equity/ETF exercise rights and broker cutoffs, OCC $.01 exercise-by-exception threshold subject to contrary clearing-member instructions and broker-specific handling; a spread long leg needs separate broker instructions; exercise can discard time value; dividends and early call exercise; closing a European option is distinct from exercising it.
+- https://www.finra.org/investors/insights/trading-options-understanding-assignment
+  Confirms independent one-leg assignment obligations, holder exercise even when an option is out of the money, after-hours expiration risk and surviving long-leg exposure.
+- https://www.optionseducation.org/news/splits-happen
+  Confirms typical 1-for-10 reverse-split deliverable changes 100 shares to 10 while premium multiplier and aggregate exercise price remain unchanged; exact OCC memo controls.
+- https://www.optionseducation.org/advancedconcepts/delta
+  Confirms per-$1 underlying delta units, long-call/long-put signs, short-position sign reversal and other-inputs-fixed limitation.
+- https://www.optionseducation.org/advancedconcepts/theta
+  Confirms daily theoretical premium sensitivity, nonlinear time decay and model-specific conventions.
+- https://www.optionseducation.org/strategies/all-strategies/bull-call-spread-debit-call-spread
+- https://www.optionseducation.org/strategies/all-strategies/bull-put-spread-credit-put-spread
+  Confirms stated structures and expiration profit/loss behavior.
+- https://www.irs.gov/publications/p550
+  Current page presents Publication 550 (2025), matching beginner/07_RISK.md's dated statement. Personalized treatment and 2026 filings were not evaluated.
+
+Limits: no learner interviews or measured retention/completion-time studies, paid or gated data review, live brokerage execution, personal suitability judgment or trading-edge validation. Audit conclusions concern the assigned course text and classroom arithmetic, not production app behavior or all advanced volumes (assigned separately).

@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-14",
+  "courseVersion": "2026-11-14.2",
+  "findingsFixed": 14,
+  "pythonTests": 24,
+  "nodeTests": 19,
+  "localHttpStatusChecks": 49,
+  "browserSmokeStages": 14,
+  "lint": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "fullDependencyAdvisories": 0,
+  "targetedBrowserRegressions": [
+    "review timer",
+    "review focus",
+    "library retry",
+    "resource retry",
+    "text contrast",
+    "search focus"
+  ],
+  "targetedBrowserEnvironments": [
+    "development",
+    "built Worker"
+  ],
+  "contrastRatios": {
+    "chapterAssumptions": 6.150848561086386,
+    "contractAssumptions": 6.411798393865274,
+    "payoffLimitations": 6.063753419699202
+  },
+  "caveatFontSizePx": 12,
+  "productionLearningRecordsUsed": false,
+  "publication": {
+    "status": "succeeded",
+    "url": "https://options-academy-pradeep.giftedpage.chatgpt.site",
+    "commitSha": "1785410cc3e65cb277db03d44b940d2a1224d432",
+    "deploymentId": "appgdep_6af861d88a04819181ecf98c1b2b0dd7",
+    "versionId": "appgprj_6af85054264c819188a8e62de9decd03~appgver_35a34e1b07dc81919baa5eae8e49e3e6",
+    "audience": "owner-only"
+  }
+}

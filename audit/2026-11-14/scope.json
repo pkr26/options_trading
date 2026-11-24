@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-14",
+  "timezone": "America/Phoenix",
+  "application_revision": "d822053ae0016c0ce6c2c61b4e8dcdee078b0aac",
+  "course_document_count": 38,
+  "documents": [
+    {
+      "path": "ADVANCED_FIRST_WEEK.md",
+      "bytes": 9352,
+      "sha256": "9b217a57393b1afc8a4518ac21d3ba4703fe73b145e1571f793a38e7d4bae6ee"
+    },
+    {
+      "path": "ADVANCED_STUDY_GUIDE.md",
+      "bytes": 7720,
+      "sha256": "6defe35bbf1282c645c0db30df8a5cb07fb240562fae17cea736df46e7bb0e19"
+    },
+    {
+      "path": "COURSE.md",
+      "bytes": 21980,
+      "sha256": "bd258ed5ca9c68914a0a74fef52a6c84d610668ec9e9f5b56a9cc7907dee7114"
+    },
+    {
+      "path": "DYNAMIC_HEDGING_LAB.md",
+      "bytes": 6416,
+      "sha256": "5fcbc28a14ac75d7d1b2cc336458f59b56e40af8d75fac17e659e55beac6f920"
+    },
+    {
+      "path": "EXECUTION_PRACTICE.md",
+      "bytes": 10148,
+      "sha256": "b6325904b65ac6a5e8545d293ff1ebb6e09e7cd72a081e6d6ebd860fc0243ab8"
+    },
+    {
+      "path": "FOUNDATION_ANSWER_KEY.md",
+      "bytes": 9747,
+      "sha256": "4360ec9b26c9a836ca50b0ffd2250c4ec2840203ff4ac1250c17c1e4cfb51fc2"
+    },
+    {
+      "path": "FOUNDATION_ASSESSMENTS.md",
+      "bytes": 9019,
+      "sha256": "10defead5e49c1ef7399ab48d9c3b7091e59936799a02d4ee3d5b98c480fa4e7"
+    },
+    {
+      "path": "FOUNDATION_MATH_BRIDGE.md",
+      "bytes": 7251,
+      "sha256": "03d5a4f2015dda91ac3cd55315e1055b493c5480dbb79b92515f510b49be042d"
+    },
+    {
+      "path": "HOW_TO_STUDY.md",
+      "bytes": 3725,
+      "sha256": "058aaf772309d85b2ce7d63ee5d27da11fd2d55ab4495a4f9611c640bc56746a"
+    },
+    {
+      "path": "LEARNING_RECORD_TEMPLATE.md",
+      "bytes": 4696,
+      "sha256": "760de162b6b74e0ef76ec02da81700138978b1d7a7a0a7de0845b494b5d369e2"
+    },
+    {
+      "path": "LESSONS_01_FOUNDATIONS.md",
+      "bytes": 46116,
+      "sha256": "d03f373f6e9b416afb6bb3a87c08ceeb9fc24368d64f1e0de08354d783db35c4"
+    },
+    {
+      "path": "LESSONS_02_BEHAVIOR.md",
+      "bytes": 40096,
+      "sha256": "f4d377571b2495eb8b0f4f44a67e35b27bf46cdef0b889bbade1222e92150d21"
+    },
+    {
+      "path": "LESSONS_03_QUANT.md",
+      "bytes": 44063,
+      "sha256": "32d7ae797661abf839b8d61af0ba8fd6d83e86eba7b8a88c0aa85b6c867ca691"
+    },
+    {
+      "path": "LESSONS_04_RESEARCH.md",
+      "bytes": 44584,
+      "sha256": "05cf1d48e5b8d1bedec6ad518ab9d60cfade0a3d574330f48647b293ab7177d3"
+    },
+    {
+      "path": "MASTERY_TRACKS.md",
+      "bytes": 6750,
+      "sha256": "9b679bca13f12451b04d0d6dfc4e5204c470702ee203f60d242b4381a91db8ec"
+    },
+    {
+      "path": "MY_LEARNING_RECORD.md",
+      "bytes": 3489,
+      "sha256": "5b64c38e2ee68150c95a71d807c91721ba6d8b80a3068f19879af2b309a3e7be"
+    },
+    {
+      "path": "OPERATIONAL_CASEBOOK.md",
+      "bytes": 13104,
+      "sha256": "5822cf5e21c3fc9e22a4854c907cc6f12bc24b62d4474b919c514ae28f6ac3f9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3583,
+      "sha256": "122cd926c9af503a95bd8db38f5b4f92aa5324221d2343fd8ec0b4525d3b8e92"
+    },
+    {
+      "path": "RESEARCH_LAB.md",
+      "bytes": 18872,
+      "sha256": "6d45e592ab36e784606375d6853530e20b7ba22cfd3d305f12901a5a09503964"
+    },
+    {
+      "path": "RISK_AND_OPERATIONS.md",
+      "bytes": 20904,
+      "sha256": "d84d4e0d0e4fa69b9fc69e623f5258946eeec742e7f75790ab37f13d8f170c1b"
+    },
+    {
+      "path": "SOURCES.md",
+      "bytes": 16700,
+      "sha256": "49022fdd9cdd54ac39ec78cdf48cb0eb1d1648e9048f7d8c042f46e57f80acc9"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 1915,
+      "sha256": "8a378ed34b721129d55b4e2bab050e95ea53967699f36a632187b60a1d7638b4"
+    },
+    {
+      "path": "VERIFICATION_HISTORY_2026_10_26.md",
+      "bytes": 11595,
+      "sha256": "8cd020dd9c99263d451891973219670a2a6158bea1c8924e4bcc83e1acbc1bc8"
+    },
+    {
+      "path": "VERIFICATION_REPORT.md",
+      "bytes": 10160,
+      "sha256": "09ef78472111b142c3102284ffeb96c267a73115c9e156a39a47205f1d41c472"
+    },
+    {
+      "path": "beginner/01_MARKETS.md",
+      "bytes": 11047,
+      "sha256": "db6e6d03af1aea97189db2bc3103f80d8803881e3317bd10e435042160bc456d"
+    },
+    {
+      "path": "beginner/02_CONTRACTS.md",
+      "bytes": 11944,
+      "sha256": "3d2fd3383b4a09aff385fcb1c045549b3a18e5f7c23e7c6beef983b95963bcff"
+    },
+    {
+      "path": "beginner/03_PROFIT.md",
+      "bytes": 12407,
+      "sha256": "45b446f9380bb8de103939508afb03a257318d91f4c033e0d03a4ac2ee2355de"
+    },
+    {
+      "path": "beginner/04_PRICES.md",
+      "bytes": 14184,
+      "sha256": "dc815c331b349abc9e150b6fd6c1022f7e3e0e162876d7788db4303681a552f0"
+    },
+    {
+      "path": "beginner/05_OPERATIONS.md",
+      "bytes": 17085,
+      "sha256": "2795804acb6bf9ba1357d186cdacb9470611a0deec113eb9cbca418847574074"
+    },
+    {
+      "path": "beginner/06_STRATEGIES.md",
+      "bytes": 16792,
+      "sha256": "c85542e0bfeaea9966dd470c117d029e4c887a16f3c99d7aaccbb3c70b73c7f6"
+    },
+    {
+      "path": "beginner/07_RISK.md",
+      "bytes": 17524,
+      "sha256": "3feaa65d761b45b6402b92f92ca0ee13b6c538ad8a2edf27361b8b580271c79d"
+    },
+    {
+      "path": "beginner/08_PRACTICE.md",
+      "bytes": 22217,
+      "sha256": "2720a466394327422153658ed2ab6ba3205f6e68b2b64d9eabd9a8345a7752f5"
+    },
+    {
+      "path": "beginner/GLOSSARY.md",
+      "bytes": 6725,
+      "sha256": "8d08cc40479c8d9f6dc11cf45f43962e1a8ef274e1a4f52a49430c6f949db09d"
+    },
+    {
+      "path": "beginner/README.md",
+      "bytes": 4221,
+      "sha256": "bdc88e9987e3620021acb08b97a2b3ae3b3f9c981a69a940e3ad9f4f73cdcae1"
+    },
+    {
+      "path": "beginner/REVIEW_PLAN.md",
+      "bytes": 4132,
+      "sha256": "a9902026847ea758a6aae80d5ded85e82901fefde12169b5810320da2d510c7a"
+    },
+    {
+      "path": "beginner/WORKBOOK.md",
+      "bytes": 6334,
+      "sha256": "83e8b5c62ad515b8c9c18f32e2f7d55dd9d4389496533bd8d26d1b78bfda3ed4"
+    },
+    {
+      "path": "course-app/README.md",
+      "bytes": 5923,
+      "sha256": "7f774f46c8f0c6b97a923a9168f4fb037d7b15399e1889ae7954204cde6ade88"
+    },
+    {
+      "path": "labs/README.md",
+      "bytes": 9046,
+      "sha256": "8fb8af5a41f50f0f8c58e69394fcca16e4dbfaf32c658e08fcc08812d294b39a"
+    }
+  ]
+}

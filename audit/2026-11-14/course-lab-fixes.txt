@@ -1,0 +1,28 @@
+Course and laboratory fixes complete — November14,2026
+
+Changed files (no app snapshots/public copies touched):
+- labs/options_lab.py
+- labs/test_options_lab.py
+- labs/README.md
+- COURSE.md
+- MASTERY_TRACKS.md
+- MY_LEARNING_RECORD.md
+- LESSONS_04_RESEARCH.md
+- LESSONS_03_QUANT.md
+
+F07: Ledger validates constructor and all public method boundaries for validated contract, finite nonboolean cash, signed integer/nonboolean shares and option quantities. Candidate balances are validated before committing trades or settlement. Equity rejects nonfinite output. Failed validation preserves state.
+F12: quote_flags rejects noninteger/boolean/NaN/infinite sizes before fill modeling; zero/negative whole sizes explicitly unavailable. Direct construction covered, fixtures unchanged.
+F08: Independent research path branches preregistration, accounting, execution and later evaluation by A/B/C evidence level.
+F09: Three advanced first-week links corrected, preserving personal entries, dates and Pending rows.
+F10: Added qualified same-strike European calendar check under zero rates/dividends/costs and unrestricted stock borrow/funding. Worked violation, full short-share/cash ledger, fresh transfer case, falling annualized-IV counterexample, and pass gate. Primary source cited in course: https://arxiv.org/abs/1204.0646 (accessible); author-hosted Imperial PDF section2.1 independently read.
+F11: Course map and lab README distinguish impossible quotes from genuine zero-bid illiquidity and preserve held exposures/raw observations.
+Additional precise clarification: finite coin examples versus probability-zero outcomes in continuous price models.
+
+Validation:
+- All24 Python tests pass (4new test methods, many parameterized boundary cases).
+- Lab demo retains D1=$38,D2=-$42 and six final forecast outcomes reserved.
+- All381 local links in40 scanned Markdown files resolve.
+- Independent Decimal arithmetic checked84 two-expiry stock-price paths at two opening credits; every path retains at least the opening credit under the stated model. Fresh transfer ledger gives$70/$1070; total variances4.80/8.10.
+- Read-only independent backend review found no issue in bounded64KiB reader, nullable legacy quiz sequence plus new unique constraint, conditional reviewRevision update, or schema-only appended migration.
+
+Root should regenerate teaching JSON/public copies/ZIP after final source docs edits and perform full app integration/publication checks.

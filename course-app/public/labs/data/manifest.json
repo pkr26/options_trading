@@ -1,0 +1,26 @@
+{
+  "data_kind": "SYNTHETIC",
+  "purpose": "deterministic teaching fixture; no historical market evidence",
+  "created": "2026-10-26",
+  "market_calendar": "dates are teaching labels, not verified trading sessions",
+  "contract": {
+    "option_id": "SYN-C100-FEB26",
+    "right": "call",
+    "strike": 100,
+    "multiplier": 100,
+    "deliverable_shares": 100,
+    "settlement": "physical",
+    "expiration": "2026-02-20"
+  },
+  "quote_convention": "fictional bid and ask observed before fictional order time",
+  "fees": "$1 per filled contract per side in toy backtest",
+  "fills": "explicit deterministic assumptions only; no queue, routing, trade prints, or live execution calibration",
+  "split": "first 12 rows of daily_observations.csv development, next 6 validation; final_observations.csv is opened only by --open-final",
+  "sha256": {
+    "quotes.csv": "1a6067ac0d4da65cefcc5a687bcb03defede7b8b2d2016c23d6982bb7d78a60f",
+    "decisions.csv": "3a637d65e4e3d00fa0f4b75c1b106bceff5668d15805a5ebd43c591698002425",
+    "daily_observations.csv": "0121c0bc6a0a1af78d74711505b3875f16919a719be1ee8bb2da9136d84718c4",
+    "trial_log.csv": "50763809f35c526a47e8d35e667e51489560192723a9199b37daf049d2d2c93e",
+    "final_observations.csv": "05177ba47fd969b9d0989c19450122e2c5546a3c4c900704aad026332a9400ef"
+  }
+}

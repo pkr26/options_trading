@@ -1,0 +1,7 @@
+date,net_pnl,benchmark_pnl,event,forecast_probability,synthetic
+2026-01-29,-14,-8,0,0.47,YES
+2026-01-30,11,6,0,0.4,YES
+2026-02-02,-7,-4,1,0.6,YES
+2026-02-03,6,4,0,0.39,YES
+2026-02-04,-3,-1,1,0.57,YES
+2026-02-05,4,2,0,0.45,YES

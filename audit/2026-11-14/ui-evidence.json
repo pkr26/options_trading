@@ -1,0 +1,49 @@
+{
+  "review": {
+    "afterDueTime": {
+      "browserTime": "2026-11-16T12:00:00.101Z",
+      "reviewRows": 0,
+      "learningRequests": 1
+    },
+    "expectedReviewRows": 1,
+    "afterReload": {
+      "reviewRows": 1,
+      "learningRequests": 2
+    }
+  },
+  "contrast": {
+    "chapterAssumptions": {
+      "text": "Chapter assumptions & study notes",
+      "color": "rgb(141, 161, 116)",
+      "background": "rgb(249, 251, 245)",
+      "fontSize": "10px",
+      "contrastRatio": 2.6922609395523858
+    },
+    "contractAssumptions": {
+      "text": "One standard contract. Multiplier 100. Fictional prices. Taxes excluded.",
+      "color": "rgb(165, 177, 147)",
+      "background": "rgb(255, 255, 255)",
+      "fontSize": "9px",
+      "contrastRatio": 2.255629508311196
+    },
+    "payoffLimitations": {
+      "text": "This is an expiration payoff model, not a trading signal or an option-pricing model. Before expiration, time, volatility, rates, dividends, and executable quotes affect price. Exercise of a stock option can create shares and funding obligations; these are not simulated here.",
+      "color": "rgb(165, 175, 150)",
+      "background": "rgb(248, 249, 245)",
+      "fontSize": "9px",
+      "contrastRatio": 2.1652335594976417
+    }
+  },
+  "retry": {
+    "afterRetry": {
+      "resourceRequests": 1,
+      "resourceArticleCount": 0,
+      "errorVisible": false
+    },
+    "expectedResourceRequests": 2,
+    "afterReopening": {
+      "resourceRequests": 2,
+      "resourceArticleCount": 1
+    }
+  }
+}

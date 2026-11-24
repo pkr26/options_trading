@@ -1,0 +1,66 @@
+APPLICATION API / AUTH / DATA-INTEGRITY AUDIT — 2026-11-14
+
+Scope read: every app/api/*/route.ts; lib/api.ts; lib/learning.ts; lib/export.ts; lib/types.ts; lib/quiz-bank.ts; db/schema.ts; db/index.ts; initial SQL migration; app/chatgpt-auth.ts; app/page.tsx; worker/index.ts; Vite and framework configuration; local authentication plugin; existing unit/integration test source; package lock/dependency explanation and built server artifacts for advisory reachability. No source, production data or local DB rows were changed.
+
+CONFIRMED FINDING A1 — MEDIUM: header-only body-size limit is bypassed by chunked/missing-length requests.
+Location: course-app/lib/api.ts:12; notes route:8; quiz route:27; profile/progress request.json calls.
+The 25,000-byte limit reads Content-Length only, treating its absence as zero. The route then buffers and JSON-parses the entire body. Zod objects strip unknown keys rather than preventing oversized bodies. Isolated execution of the unmodified route source accepted a 100,050-byte request containing a valid 10-character note and an ignored 100,000-character property, status200. Same request with actual Content-Length would413. Local HTTP reproduction used lessonId0 to ensure no write: 100,045 bytes with Content-Length returned413; identical streamed/chunked body returned400 only after normal schema validation. Thus the application guard fails independently of whatever larger platform body cap applies.
+Impact: authenticated clients can defeat the intended input budget; quiz answers use an unbounded record and are traversed before five-key grading, increasing parse/validation allocation. An availability outage was not attempted or established.
+Fix: shared bounded streaming JSON reader with a measured byte limit (keep Content-Length as an optional early rejection), and exact/bounded answer keys before per-item validation. Apply to every mutation route.
+
+CONFIRMED FINDING A2 — MEDIUM: concurrent quiz submissions bypass stale-form validation and corrupt alternation.
+Location: course-app/app/api/quiz/route.ts:29-33; course-app/db/schema.ts:21-30.
+POST separately reads the user's attempt count, checks parity, then inserts a fresh random UUID row. No atomic revision check or unique attempt sequence/issued-form token exists. Two requests for variant0 can both read zero attempts and both commit. Deterministic isolated execution of the real route code with a controlled in-memory Drizzle boundary returned [200,200], stored [variant0,variant0], and calculated the next form as variant0, skipping variant1.
+Impact: retries/two tabs duplicate history and defeat promised alternate-form/stale-request behavior. Server grading and per-user scoping remain intact; this is not arbitrary score injection.
+Fix: persist and atomically consume an issued attempt token/revision, with a uniqueness constraint and conditional insert/update; make duplicate/replayed submission return the saved result or409. Add a concurrent duplicate test with controlled interleaving.
+
+CONFIRMED FINDING A3 — MEDIUM: concurrent recall updates lose an acknowledged result.
+Location: course-app/app/api/progress/route.ts:12-17.
+ReviewCount is read then replaced with old.reviewCount+1. Two simultaneous successful reviews of the same lesson both read the old count and both acknowledge success but overwrite with the same increment and due date. Isolated execution returned [200,200] from count0 yet stored count1, where two independently accepted reviews would imply count2 (or the duplicate should have been rejected/idempotent).
+Fix: optimistic revision/conditional update and conflict response, or atomic SQL update that computes count and schedule together. Decide whether same scheduled review should be idempotent; preserve that decision in the API contract and test success/failure interleavings.
+
+CONFIRMED FINDING A4 — LOW: advertised 10,000-character notes are rejected according to encoding.
+Location: course-app/app/api/notes/route.ts:4 and course-app/lib/api.ts:12; README endpoint promises up to10,000 characters.
+A note of10,000 Chinese characters satisfies z.string().max(10000), but its JSON body is30,027 UTF-8 bytes and is rejected413 when Content-Length is present. ASCII of equal character count passes the byte gate. Isolated execution verified the413 response. The UI does not communicate this smaller byte cap.
+Fix: choose compatible byte and character limits (10,000 UTF-16 code units can require roughly30KB of UTF-8 before JSON escaping, and control-character JSON escapes can require more), enforce measured bytes, and state the actual limit. This can be fixed together with A1.
+
+CHECKS THAT PASSED / NO CONFIRMED ISSUE
+- Every private-data select/update is explicitly scoped to trusted userId; note/progress composite primary keys prevent same-user/lesson duplicates. Quiz scores and pass status are computed server-side; missing/extra/noninteger answer keys rejected by gradeQuestions.
+- Sequence and checkpoint prerequisite checks are server-side. Completion insertion is idempotent via composite PK/onConflictDoNothing.
+- Notes are stored as text; SQL uses ORM bindings. API error responses avoid internal exception messages. Learning/export responses use private/no-store. CSV formula prefixes, quotes and newlines are neutralized.
+- Same-origin mutation checks and JSON content-type requirements exist. Optional Origin alone is not a demonstrated CSRF bypass: browsers send cross-origin Origin and JSON requests require preflight.
+- Header authentication is a platform trust boundary. Local development strips incoming identity headers and injects only its documented loopback mock identity; production worker delegates platform identity. Hosted edge header-stripping/direct-worker exposure cannot be established from source alone and was not tested. Do not label localhost header behavior a production auth vulnerability without platform evidence.
+- Public course resources/health contain no personal learning rows. Public resource access can additionally be restricted by the configured private Sites audience.
+
+DEPENDENCY ADVISORY REACHABILITY (do not equate registry severity with proven app exploit)
+Supplied npm audit --omit=dev result: six packages flagged: next critical; sharp, zod and source-map-js high; fast-uri and baseline-browser-mapping moderate. Installed versions and advisories warrant maintenance; none was exploited during this audit.
+
+next16.3.4:
+- GHSA-vcvr-r3jv-pc5j is critical Node next/og ImageResponse RCE with attacker-controlled SVG. No next/og or ImageResponse import/route exists; worker is Vinext, and no ImageResponse implementation appears in built server JS. Not reachable through observed app features.
+- GHSA-2464-fhr4-w9xw is critical SVG image optimization/upstream sharp RCE under glibc-Linux conditions. This app uses Vinext's image handler (Cloudflare Images binding or original-file passthrough), not Next's Node image optimizer; no sharp native image implementation appears in built server JS. Not established as reachable here.
+- Other Next findings concern Next SSG/ISR/use-cache, server actions, metadata images, development MCP, image optimization. No application use-cache/use-server actions/metadata-image route was found; app home is force-dynamic. These version flags alone do not establish those features are active under Vinext.
+
+sharp0.35.4:
+- GHSA-wq5f-xc86-pv6w: librsvg memory safety/RCE under certain runtime conditions; patched0.35.5. npm explain shows optional Next dependency plus explicit Miniflare override to0.35.4. The latter also affects local preview/tooling. Update/remove the override and test compatibility. No app-facing SVG decode path using native sharp identified.
+
+zod3.25.76:
+- GHSA-mrhx-c7xc-m3w5: high resource exhaustion while accumulating issues for oversized arrays; patched4.6.6 according to advisory. API schemas use scalar/object/record forms, not z.array. Exact cited array path not demonstrated. A1 plus quiz's unbounded record is still a real independent input-resource weakness; do not call Zod fully mitigated solely because array schemas are absent. Major-version migration should be tested; do not npm audit fix --force blindly.
+
+source-map-js1.2.1:
+- via PostCSS/Next and Vite/Tailwind build tooling. No source-map ingestion API or package code identified in built server JS. The flagged indexed-map parser path is not exposed by course routes. Update lockfile; no remote-course-user exploit demonstrated.
+
+fast-uri3.1.7:
+- via AJV/schema-utils/Webpack optional/peer chains and hook-form resolver optional peers. The application API uses Zod and WHATWG URL, not fast-uri URL parsing. No package implementation identified in built server JS. Update compatible transitive dependency; no affected authorization/URL comparison identified.
+
+baseline-browser-mapping:
+- browser build-target tooling; no user-controlled baseline-browser resolver input or package implementation identified in production server JS. Update compatible transitive dependency; no app-request process-termination path demonstrated.
+
+Useful primary advisory URLs:
+https://github.com/vercel/next.js/security/advisories/GHSA-vcvr-r3jv-pc5j
+https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw
+https://github.com/lovell/sharp/security/advisories/GHSA-wq5f-xc86-pv6w
+https://github.com/advisories/GHSA-mrhx-c7xc-m3w5
+The first three publisher advisories are linked from reviewed GitHub Advisory Database records opened during this audit.
+
+REPRODUCTION ARTIFACT
+/tmp/options-api-isolated.cjs transpiles unchanged route/API/learning/quiz source into a VM with injected in-memory DB/auth boundaries, then executes four bounded edge cases. It does not connect to Cloudflare, persist rows or mutate application source. All four results above reproduced. HTTP streaming check against localhost5173 used only invalid lessonId0 and therefore made no learning-data write.
