@@ -50,6 +50,9 @@ function normalizeLinks(markdown, sourceFile) {
   });
 }
 
+const reviewPlan = readFileSync(resolve(root, 'beginner/REVIEW_PLAN.md'), 'utf8');
+const usualLessonTime = reviewPlan.match(/allow roughly (\d+[–-]\d+ minutes) to read/i)?.[1];
+if (!usualLessonTime) throw new Error('The review plan must state the usual lesson time.');
 const files = readdirSync(resolve(root, 'beginner')).filter(f => /^0[1-8]_.*\.md$/.test(f)).sort();
 if(files.length !== 8) throw new Error(`Expected 8 modules; found ${files.length}`);
 const modules = files.map((file, i) => {
@@ -69,7 +72,13 @@ const modules = files.map((file, i) => {
     const title = m[0].replace(/^## Lesson\s+\d+\s*[:—–.·-]?\s*/, '');
     if(!body.includes('<details>') || body.length < 350) throw new Error(`Lesson ${id} missing teaching/answer`);
     if (/^##\s/m.test(body)) throw new Error(`Lesson ${id} contains a following section`);
-    return {id, moduleId:i+1, title, minutes:10, sourceFile, body};
+    const timeLabel = body.match(/^\*\*Time: ([^.\n]+)\./m)?.[1] ?? usualLessonTime;
+    const duration = timeLabel.match(/^(\d+)(?:[–-](\d+))? minutes\b/);
+    if (!duration) throw new Error(`Lesson ${id}: unrecognized time estimate "${timeLabel}"`);
+    const sessions = timeLabel.includes('per case') ? [...body.matchAll(/^\*\*Case [A-Z] [—–]/gm)].length : 1;
+    if (!sessions) throw new Error(`Lesson ${id}: per-case estimate requires named cases`);
+    const minutes = Number(duration[2] ?? duration[1]) * sessions;
+    return {id, moduleId:i+1, title, minutes, timeLabel, sourceFile, body};
   });
   return {id:i+1,title:titles[i],description:descriptions[i],file,sourceFile,introduction,lessons,checkpoint:raw.slice(lastEnd).trim()};
 });

@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 import { expect } from "@playwright/test";
+import { makeGraduatePractice, gradeGraduatePractice } from "../lib/graduate-practice.ts";
 
 const base = new URL(process.env.LOCAL_API_BASE ?? "http://127.0.0.1:5173");
 assert.equal(base.protocol, "http:");
@@ -42,6 +43,81 @@ await context.route("**/api/graduate/practice**", async route => {
   record.practice.push(attempt);
   return route.fulfill({status: 201, json: {attempt}});
 });
+
+async function verifyPracticeNavigation() {
+  const page = await context.newPage();
+  page.on("dialog", dialog => dialog.accept());
+  const delayedGet = Promise.withResolvers(), delayedPost = Promise.withResolvers();
+  const saved = [];
+  await page.route("**/api/graduate", route => route.fulfill({json: {submissions: [], practice: saved}}));
+  await page.route("**/api/graduate/practice**", async route => {
+    const request = route.request();
+    if (request.method() === "GET") {
+      const moduleId = Number(new URL(request.url()).searchParams.get("moduleId"));
+      if (moduleId === 10) await delayedGet.promise;
+      return route.fulfill({json: {moduleId, sequence: 0, questions: makeGraduatePractice(moduleId, 0)}});
+    }
+    const {moduleId, sequence, answers} = request.postDataJSON();
+    const feedback = gradeGraduatePractice(moduleId, sequence, answers);
+    saved.push({id: "navigation-attempt", moduleId, sequence, feedback, total: feedback.length,
+      score: feedback.filter(item => item.correct).length, createdAt: "2026-11-27T10:00:00Z"});
+    await delayedPost.promise;
+    return route.fulfill({status: 201, json: {attempt: saved[0]}});
+  });
+
+  async function releaseResponse(gate, request) {
+    const received = page.waitForResponse(response => response.request() === request);
+    gate.resolve();
+    await (await received).finished();
+    // Give the fetch continuation and React a paint before asserting that old UI did not appear.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  }
+
+  try {
+    await page.goto(new URL("/#advanced/module/10/practice", base).href);
+    const start = page.getByRole("button", {name: "Start a fresh practice set", exact: true});
+    const picker = page.locator(".graduate-module-picker select");
+    const questions = page.locator(".graduate-practice-question");
+    const inputs = questions.locator("input");
+    const grade = page.getByRole("button", {name: "Check and save my answers", exact: true});
+
+    const getRequested = page.waitForRequest(request => request.url().includes("/api/graduate/practice?moduleId=10"));
+    await start.click();
+    const oldGet = await getRequested;
+    await picker.selectOption("1");
+    await expect(page).toHaveURL(/#advanced\/module\/1\/practice$/);
+    await start.click();
+    await expect(questions.first()).toContainText(makeGraduatePractice(1, 0)[0].prompt);
+    await releaseResponse(delayedGet, oldGet);
+    await expect(questions).toHaveCount(3);
+    await expect(questions.first()).toContainText(makeGraduatePractice(1, 0)[0].prompt);
+
+    for (const [index, answer] of ["20", "11.11", "4410"].entries()) await inputs.nth(index).fill(answer);
+    const postRequested = page.waitForRequest(request => request.method() === "POST" && request.url().endsWith("/api/graduate/practice"));
+    await grade.click();
+    const oldPost = await postRequested;
+    assert.equal(oldPost.postDataJSON().moduleId, 1);
+    await page.evaluate(() => { window.location.hash = "advanced/module/2/practice"; });
+    await expect(picker).toHaveValue("2");
+    await start.click();
+    await expect(questions.first()).toContainText(makeGraduatePractice(2, 0)[0].prompt);
+    await inputs.first().fill("17");
+    await releaseResponse(delayedPost, oldPost);
+    await expect(inputs.first()).toBeEditable();
+    await expect(inputs.first()).toHaveValue("17");
+    await expect(page.locator(".graduate-practice-result")).toHaveCount(0);
+    await expect(page.locator(".graduate-history")).toHaveCount(0);
+
+    await picker.selectOption("1");
+    await expect(page.locator(".graduate-history summary")).toHaveText(/3\/3 correct/);
+    assert.deepEqual(saved.map(attempt => attempt.moduleId), [1]);
+  } finally {
+    delayedGet.resolve();
+    delayedPost.resolve();
+    await page.close();
+  }
+}
+
 try {
   const page = await context.newPage();
   await page.goto(base.href + "#advanced/module/10/case");
@@ -49,6 +125,25 @@ try {
   await expect(page.locator(".graduate-module-picker select")).toHaveValue("10");
   const textareas = page.locator(".graduate-writing textarea");
   await expect(textareas).toHaveCount(3);
+  const commit=page.getByRole("button",{name:"Commit initial answer & reveal update",exact:true});
+  for(const field of await textareas.all()){
+    await field.fill("漢".repeat(20));
+  }
+  await expect(commit).toBeEnabled();
+  await textareas.nth(1).fill("  "+"漢".repeat(19)+"  ");
+  await expect(commit).toBeDisabled();
+  await textareas.nth(1).fill("🌱".repeat(19));
+  await expect(commit).toBeDisabled();
+  await textareas.nth(1).fill("🌱".repeat(20));
+  await expect(commit).toBeEnabled();
+  await textareas.nth(0).fill("🌱".repeat(6000));
+  await expect(commit).toBeEnabled();
+  await expect(textareas.nth(0).locator("..")).toContainText("6,000 / 6,000 characters");
+  await textareas.nth(0).fill("🌱".repeat(6001));
+  await expect(textareas.nth(0)).toHaveValue("🌱".repeat(6001));
+  await expect(commit).toBeDisabled();
+  await expect(page.getByRole("alert")).toContainText("Shorten it");
+  await expect(page.getByRole("button",{name:"Save draft",exact:true})).toBeDisabled();
   await textareas.nth(0).fill(answers.recommendation);
   await textareas.nth(1).fill(answers.analysis);
   await textareas.nth(2).fill(answers.risks);
@@ -105,6 +200,36 @@ try {
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.screenshot({path: "/tmp/options-graduate-desktop.png", fullPage: false});
 
+  const labPage = await context.newPage();
+  await labPage.goto(base.href+"#advanced/module/10/labs");
+  const lab=labPage.locator(".graduate-lab-card").filter({hasText:"Compare protection, upside, and cash"});
+  await lab.getByLabel("Starting cash budget ($)",{exact:true}).fill("0");
+  await lab.getByLabel("Call premium ($/share)",{exact:true}).fill("200");
+  await expect(lab.getByRole("alert")).toContainText(/call/i);
+  await lab.getByRole("textbox").fill("The call premium exceeds the stock price.");
+  await lab.getByRole("button",{name:"Reveal and compare"}).click();
+  await expect(lab.getByRole("row",{name:/^Collar/}).getByRole("cell").last()).toHaveText("Review quotes");
+  await expect(lab.getByRole("row",{name:/^Cash/}).getByRole("cell").last()).toHaveText("Fits");
+  await lab.getByLabel("Call premium ($/share)",{exact:true}).fill("2");
+  await expect(lab.getByRole("alert")).toHaveCount(0);
+  await lab.getByRole("textbox").fill("The collar now needs additional funding.");
+  await lab.getByRole("button",{name:"Reveal and compare"}).click();
+  await expect(lab.getByRole("row",{name:/^Collar/}).getByRole("cell").last()).toHaveText("Needs extra funding");
+  await lab.getByLabel("Starting cash budget ($)",{exact:true}).fill("9944.03");
+  await lab.getByLabel("Put premium ($/share)",{exact:true}).fill("1.01");
+  await lab.getByLabel("Call premium ($/share)",{exact:true}).fill("1.57");
+  await lab.getByLabel("Fee per opening order ($)",{exact:true}).fill("0.01");
+  await lab.getByRole("textbox").fill("Opening fees bring the residual cash to exactly zero.");
+  await lab.getByRole("button",{name:"Reveal and compare"}).click();
+  const collar=lab.getByRole("row",{name:/^Collar/});
+  await expect(collar.getByRole("cell").nth(1)).toHaveText("$0.00");
+  await expect(collar.getByRole("cell").last()).toHaveText("Fits");
+  await lab.getByLabel("Put premium ($/share)",{exact:true}).fill("12");
+  await lab.getByLabel("Call premium ($/share)",{exact:true}).fill("3");
+  await expect(lab.getByRole("alert")).toBeVisible();
+  await labPage.close();
+  results.quotePlausibility="An impossible call quote is flagged before reveal and cannot qualify a collar under a zero budget.";
+
   const guest = await browser.newContext({viewport: {width: 390, height: 844}});
   await guest.route("**/api/graduate", route => route.fulfill({status: 401, json: {error: "Sign in to save your learning."}}));
   const guestPage = await guest.newPage();
@@ -114,6 +239,8 @@ try {
   await expect(guestPage.locator(".graduate-record-status a")).toHaveAttribute("target", "_top");
   results.guest = "Unsigned visitors can read the classroom and see the correct sign-in action.";
   await guest.close();
+  await verifyPracticeNavigation();
+  results.practiceNavigation = "Delayed practice and grading responses preserved module ownership across picker and hash navigation.";
   console.log(JSON.stringify(results, null, 2));
 } finally {
   await browser.close();

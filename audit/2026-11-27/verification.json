@@ -1,0 +1,359 @@
+{
+  "date": "2026-11-27",
+  "scope": "Local checkout and isolated D1. Browser fixtures and temporary records only.",
+  "sha256": {
+    "course-app/package-lock.json": "f1ea25cb948761c5595a3b6106bda0c5b88f8d1df45541765836b36aeb574bef",
+    "course-app/content/course.json": "92e51228f74862c206ba1bb205b98ffc2b4ed41fe3eee4ec566ccedf2bbe1595",
+    "course-app/content/graduate.json": "9aade4d46951a37b003df0b9d25719f0f196783de6efe3d21c691ad199655b44"
+  },
+  "runtime": {
+    "node": "24.21.0",
+    "python": "3.9.6",
+    "migrations": 4,
+    "npmAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "nodeTests": 58,
+    "pythonTests": 24
+  },
+  "developmentSuites": [
+    {
+      "suite": "api.integration.mjs",
+      "exit": 0,
+      "result": "Passed 49 local HTTP status checks plus persistence, grading, review, export, and two-user isolation assertions."
+    },
+    {
+      "suite": "graduate-api.integration.mjs",
+      "exit": 0,
+      "result": "24 advanced API checks passed: authentication, isolation, immutable revisions, race protection, grading, export."
+    },
+    {
+      "suite": "teaching-api.integration.mjs",
+      "exit": 0,
+      "result": "41 teaching API checks passed: adaptive branching, race protection, exact-submission feedback, quoted review evidence, real-date pilot, capstone revisions and isolation."
+    },
+    {
+      "suite": "browser.integration.mjs",
+      "exit": 0,
+      "result": "Passed 14 browser smoke stages covering typing focus, save/reload, completion, quizzes, reviews, references, payoff arithmetic, preferences, and mobile layout."
+    },
+    {
+      "suite": "graduate-browser.integration.mjs",
+      "exit": 0,
+      "result": "Advanced browser journey passed: 26 modules, case commitment, revision, reload, practice feedback, evidence, mobile layout."
+    },
+    {
+      "suite": "ui-regressions.integration.mjs",
+      "exit": 0,
+      "result": "Passed nonmutating UI regressions for review time/focus, resource retries, contrast, and search focus."
+    },
+    {
+      "suite": "graduate-ui.integration.mjs",
+      "exit": 0,
+      "result": null
+    },
+    {
+      "suite": "teaching-studio.integration.mjs",
+      "exit": 0,
+      "result": null
+    },
+    {
+      "suite": "portfolio-artifacts.integration.mjs",
+      "exit": 0,
+      "result": "Portfolio/artifact browser checks passed: immutable artifact saves, conflict recovery, retained drafts, joint funding stress, four research traps, mobile layout."
+    }
+  ],
+  "productionSearchFocusRegression": {
+    "runs": [
+      "failed at focus",
+      "failed at visible outline",
+      "passed",
+      "failed at focus"
+    ],
+    "suite": "tests/ui-regressions.integration.mjs",
+    "lines": [
+      82,
+      83
+    ]
+  },
+  "productionBrowserWalkthrough": {
+    "beginners": 64,
+    "answerDisclosures": 64,
+    "advancedSeminars": 26,
+    "advancedSections": 79,
+    "libraryDocumentsFetched": 38,
+    "webKitSmoke": "webkit 27.2 lesson, answer reveal, long put, staged case and debrief []",
+    "firefox159": "Local runner could not initialize profile",
+    "entryAssets": [
+      {
+        "asset": "mlzxtHN5.css",
+        "decodedBytes": 194380,
+        "encodedBytes": 30995
+      },
+      {
+        "asset": "mTnfl0aL.css",
+        "decodedBytes": 40992,
+        "encodedBytes": 7474
+      },
+      {
+        "asset": "3tPLN14U.js",
+        "decodedBytes": 105209,
+        "encodedBytes": 31386
+      },
+      {
+        "asset": "CcyWYbDU.js",
+        "decodedBytes": 755,
+        "encodedBytes": 452
+      },
+      {
+        "asset": "CNYmMxwh.js",
+        "decodedBytes": 493,
+        "encodedBytes": 296
+      },
+      {
+        "asset": "C6Dqtx07.js",
+        "decodedBytes": 460,
+        "encodedBytes": 325
+      },
+      {
+        "asset": "B1Z50-pk.js",
+        "decodedBytes": 128363,
+        "encodedBytes": 38328
+      },
+      {
+        "asset": "B0PXqnjO.js",
+        "decodedBytes": 219274,
+        "encodedBytes": 67657
+      },
+      {
+        "asset": "gmE6QXjL.js",
+        "decodedBytes": 883746,
+        "encodedBytes": 232074
+      }
+    ]
+  },
+  "representativeAutomatedAccessibilityChecks": {
+    "dashboard": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "contents": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "lesson": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "payoff": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "library": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "case": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "advanced labs": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    },
+    "teaching": {
+      "widths": {
+        "320": {
+          "inner": 320,
+          "document": 320
+        },
+        "390": {
+          "inner": 390,
+          "document": 390
+        }
+      },
+      "findings": []
+    }
+  },
+  "diagnostics": {
+    "beginner": {
+      "slots": 80,
+      "distinctPrompts": 57,
+      "repeatedPrompts": 23,
+      "repeatedKeys": 25
+    },
+    "advanced": {
+      "modules": 26,
+      "sections": 79,
+      "distinctAssignmentDeliverableLists": 1,
+      "sequencesTested": 1200,
+      "constantAnswers": [
+        {
+          "module": 6,
+          "question": 1,
+          "value": "20.00"
+        },
+        {
+          "module": 6,
+          "question": 3,
+          "value": "350.00"
+        },
+        {
+          "module": 8,
+          "question": 2,
+          "value": "10.00"
+        },
+        {
+          "module": 11,
+          "question": 3,
+          "value": "0.00"
+        },
+        {
+          "module": 12,
+          "question": 3,
+          "value": "20.00"
+        },
+        {
+          "module": 17,
+          "question": 2,
+          "value": "0.50"
+        },
+        {
+          "module": 18,
+          "question": 3,
+          "value": "1.00"
+        },
+        {
+          "module": 19,
+          "question": 2,
+          "value": "1.00"
+        },
+        {
+          "module": 19,
+          "question": 3,
+          "value": "2.00"
+        },
+        {
+          "module": 24,
+          "question": 1,
+          "value": "100.00"
+        },
+        {
+          "module": 24,
+          "question": 3,
+          "value": "2000.00"
+        },
+        {
+          "module": 25,
+          "question": 3,
+          "value": "300.00"
+        }
+      ]
+    },
+    "pricing": {
+      "contract": {
+        "spot": 1,
+        "strike": 1,
+        "years": 0.0027397260273972603,
+        "volatility": 0.01,
+        "rate": 0,
+        "dividendYield": 0,
+        "right": "call"
+      },
+      "displayedGamma": 95.82363364289192,
+      "analyticGamma": 762.1781304240392,
+      "relativeErrorPercent": -87.42765899231715
+    },
+    "tutor": {
+      "firstFillPrompt": "A buy order for 3 contracts receives supplied fills: 1 at $2.00 and 1 at $2.20; 1 is cancelled. What is the average fill per share, before fees? Round the final answer to two decimal places; keep intermediate precision.",
+      "transferPrompt": "For those two fills, fees are $2 per filled contract. What total purchase cash leaves the account? Multiplier 100. Round the final answer to two decimal places; keep intermediate precision.",
+      "submitted": 424,
+      "gradedAsCorrect": false,
+      "key": 434
+    }
+  },
+  "externalReadings": {
+    "destinations": 124,
+    "direct200": 104,
+    "direct403": 18,
+    "directTimeouts": 2,
+    "additionalDestinationsIdentifiableInWebReader": 13,
+    "stillUnverified": [
+      "https://academic.oup.com/rfs/article-abstract/33/11/4973/5732665",
+      "https://academic.oup.com/raps/article-abstract/13/3/405/7035950",
+      "https://academic.oup.com/rfs/article-abstract/16/2/527/1579962",
+      "https://academic.oup.com/rfs/article-abstract/22/3/1311/1581057",
+      "https://www.journals.uchicago.edu/doi/10.1086/260062",
+      "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253",
+      "https://academic.oup.com/rof/article-abstract/30/2/489/8301159"
+    ]
+  }
+}

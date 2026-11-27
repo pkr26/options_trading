@@ -3,13 +3,22 @@ import { europeanPrice } from "./graduate-models.ts";
 
 type KeyedQuestion = GraduatePracticeQuestion & { expected: number; explanation: string; tolerance: number };
 export const GRADUATE_GRADING_CONVENTION={countTolerance:1e-9,numericTolerance:0.00501} as const;
+export const PRACTICE_RELEASE = "2026-11-27.2";
+export const PORTFOLIO_PRACTICE_RELEASE = "2026-11-27.1";
+export const LEGACY_PRACTICE_RELEASE = "2026-11-14.2";
+export function practiceRelease(moduleId: number) {
+  if (moduleId === 7) return PRACTICE_RELEASE;
+  if (moduleId === 24) return PORTFOLIO_PRACTICE_RELEASE;
+  return LEGACY_PRACTICE_RELEASE;
+}
 const money = (n: number) => n.toFixed(2);
-function questions(moduleId: number, sequence: number): KeyedQuestion[] {
+type Presentation = "set" | "standalone";
+function questions(moduleId: number, sequence: number, presentation: Presentation): KeyedQuestion[] {
   if (!Number.isInteger(moduleId) || moduleId < 1 || moduleId > 26 || !Number.isSafeInteger(sequence) || sequence < 0 || sequence > 1_000_000) throw new RangeError("Choose a valid module and practice sequence.");
   const x = sequence % 97, n = 1 + sequence % 4, k = 40 + x, premium = 2 + x / 20, fees = 1 + sequence % 3, up = sequence % 2 === 0;
   const price = k + (up ? 8 : -6), rows: KeyedQuestion[] = [];
   const add = (skill: CompetencyId, prompt: string, expected: number, explanation: string, unit = "USD", hint = "Write the units beside every term before calculating.") => {
-    rows.push({ id: `g${moduleId}-s${sequence}-q${rows.length + 1}`, skill, prompt: `${prompt} ${unit === "count" ? "Enter a whole number." : "Round the final answer to two decimal places; keep intermediate precision."}`, unit, hint, expected, explanation, tolerance: unit === "count" ? GRADUATE_GRADING_CONVENTION.countTolerance : GRADUATE_GRADING_CONVENTION.numericTolerance });
+    rows.push({ id: `g${moduleId}${practiceRelease(moduleId) === LEGACY_PRACTICE_RELEASE ? "" : "v2"}-s${sequence}-q${rows.length + 1}`, skill, prompt: `${prompt} ${unit === "count" ? "Enter a whole number." : "Round the final answer to two decimal places; keep intermediate precision."}`, unit, hint, expected, explanation, tolerance: unit === "count" ? GRADUATE_GRADING_CONVENTION.countTolerance : GRADUATE_GRADING_CONVENTION.numericTolerance });
   };
   switch (moduleId) {
     case 1: {
@@ -49,10 +58,15 @@ function questions(moduleId: number, sequence: number): KeyedQuestion[] {
       add("risk", `After ${n} short puts are assigned at strike $${k}, exercise cash due is $${n * k * 100}. Available cash is $${n * k * 100 - 350}. What is the cash shortfall?`, 350, `Due cash minus available cash is $350; receiving shares does not itself pay the exercise cash.`);
       break;
     case 7: {
-      const delta = up ? 0.45 + x / 1000 : -0.35 - x / 1000, move = up ? 1 + n : -1 - n, gamma = 0.04 + x / 10000;
-      add("valuation", `One long option has delta ${delta}, gamma ${gamma} per $1 and multiplier 100. Stock changes by ${move} dollars. What is delta-plus-gamma estimated value change? Other inputs fixed.`, (delta * move + 0.5 * gamma * move ** 2) * 100, `Δ × stock move + ½ Γ × move², then × 100. This is a local model approximation, not a promised quote.`);
-      add("valuation", `One long option has vega $${(0.12 + x / 1000).toFixed(3)}/share per IV percentage point. IV changes from ${25 + x}% to ${up ? 28 + x : 22 + x}%. What is the vega-only contract value change?`, (up ? 3 : -3) * (0.12 + x / 1000) * 100, `The change is ${up ? "+3" : "−3"} percentage points: multiply by the stated vega and by 100.`);
-      add("valuation", `One long call has theta −$${(0.04 + x / 10000).toFixed(4)}/share/day. Under the frozen-input one-day approximation, what is the time-only value change for ${n} standard contracts?`, -(0.04 + x / 10000) * 100 * n, `The stated daily theta × 100 × ${n}. Theta is not a daily fee or complete P&L.`);
+      const delta = (up ? 450 + x : -350 - x) / 1000;
+      const gamma = (400 + x) / 10000;
+      const vega = (120 + x) / 1000;
+      const theta = -(400 + x) / 10000;
+      const move = up ? 1 + n : -1 - n;
+      const initialIv = 25 + x, finalIv = initialIv + (up ? 3 : -3);
+      add("valuation", `One long option has delta ${delta.toFixed(3)}, gamma ${gamma.toFixed(4)} per $1 and a 100-share multiplier. Stock changes by ${move} dollars per share. Estimate the signed dollar change in contract value from delta and gamma, holding other inputs fixed.`, (delta * move + 0.5 * gamma * move ** 2) * 100, `Multiply the stock move by delta, add half of gamma times the squared move, then multiply by 100 shares.`);
+      add("valuation", `One long option has vega $${vega.toFixed(3)}/share per IV percentage point and a 100-share multiplier. IV changes from ${initialIv}% to ${finalIv}%. What is the vega-only contract value change?`, (finalIv - initialIv) * vega * 100, `Multiply vega by the signed IV change (${up ? "+3" : "−3"} percentage points) and by 100 shares.`);
+      add("valuation", `One long call has theta −$${(-theta).toFixed(4)}/share/day and a 100-share multiplier. Under the frozen-input one-day approximation, what is the time-only value change for ${n} ${n === 1 ? "contract" : "contracts"}?`, theta * 100 * n, `Multiply the signed daily theta by one day, 100 shares per contract, and ${n} ${n === 1 ? "contract" : "contracts"}.`);
       break;
     }
     case 8:
@@ -70,11 +84,15 @@ function questions(moduleId: number, sequence: number): KeyedQuestion[] {
       add("valuation", `A hedge reduces the stated stress loss from $${1500 + x * 20} to $${600 + x * 10}, but costs $${250 + x}. What is the stress-loss reduction net of premium? Treat premium as additional to the stated hedged loss.`, 1500 + x * 20 - (600 + x * 10) - (250 + x), `Compare the same stress scenario: unhedged loss minus hedged loss minus premium. This is stress protection, not expected return.`);
       add("risk", `A $${500 + x * 10} hypothetical loss budget must include a $${150 + x} per-spread maximum loss and $5 fees per spread. What is the largest whole spread count?`, Math.floor((500 + x * 10) / (155 + x)), `Include fees in the per-spread loss before rounding down. A zero answer is a valid decision.`, "count");
       break;
-    case 11:
+    case 11: {
+      const fills = presentation === "standalone"
+        ? `One contract filled at $${money(premium)}/share and one at $${money(premium + 0.2)}/share. The`
+        : "For those two fills,";
       add("execution", `A buy order for 3 contracts receives supplied fills: 1 at $${money(premium)} and 1 at $${money(premium + 0.2)}; 1 is cancelled. What is the average fill per share, before fees?`, premium + 0.1, `Only filled contracts enter the weighted average. The cancelled contract has no fill.`, "USD/share");
-      add("execution", `For those two fills, fees are $${fees} per filled contract. What total purchase cash leaves the account? Multiplier 100.`, (2 * premium + 0.2) * 100 + 2 * fees, `Add each actual fill × 100 and fees for the two filled contracts.`);
+      add("execution", `${fills} fees are $${fees} per filled contract. What total purchase cash leaves the account? Multiplier 100.`, (2 * premium + 0.2) * 100 + 2 * fees, `Add each actual fill × 100 and fees for the two filled contracts.`);
       add("execution", `Buy limit $${money(2 + x / 100)}; the episode supplies asks $${money(2.1 + x / 100)} and $${money(2.2 + x / 100)} and explicitly no fills. After cancellation acknowledgement, how many option contracts were acquired?`, 0, `An unfilled order creates no option position. Preserve the decision and nonfill in the log.`, "count");
       break;
+    }
     case 12:
       add("research", `A paper ledger starts at $${10000 + x * 100}; closed P&L is +$250, open marked P&L −$80, and fees $30. No other flows. What is ending marked equity?`, 10000 + x * 100 + 140, `Starting equity + closed P&L + open marked P&L − fees. Marks are not necessarily executable liquidation prices.`);
       add("research", `There are ${10 + n} eligible setups: 4 rejected, 3 unfilled, and the rest filled. How many eligible decisions belong in the record?`, 10 + n, `All eligible setups belong, including rejections and nonfills. Recording only filled winners creates selection bias.`, "count");
@@ -139,11 +157,16 @@ function questions(moduleId: number, sequence: number): KeyedQuestion[] {
       add("research", `An uncertainty exercise supplies effective sample size 25 and per-observation SD $${100 + x}. What estimated SE follows?`, (100 + x) / 5, `SD / √25. Using raw overlapping-trade count instead would understate uncertainty if dependence is ignored.`);
       add("execution", `A reported net result is +$${500 + x * 10}. A stress test adds $${5 + n} cost for each of 100 filled contracts. What stressed net result remains?`, 500 + x * 10 - (5 + n) * 100, `Deduct the additional cost from the already net result, rather than charging all original costs a second time.`);
       break;
-    case 24:
-      add("risk", `A hypothetical portfolio has +${200 + x} share-equivalent delta from position A and −${100 + x} from B. What is net local delta?`, 100, `Add signed exposures: net +100 share equivalents. A small net delta does not eliminate gamma, volatility or gap risk.`, "share equivalents");
-      add("risk", `A joint stress produces P&L −$${400 + x} for A, −$${300 + x} for B, and +$100 for C, before $50 extra liquidation cost. What is total signed stressed P&L?`, -650 - 2 * x, `Add joint signed P&L then subtract liquidation cost. This scenario does not assume diversification survives the shock.`);
+    case 24: {
+      const longDelta = 200 + x, shortDelta = -(100 + 3 * x);
+      const firstStockDrop = 1.5 + (x % 4) * 0.25, secondStockRise = 3 + (x % 3) * 0.5;
+      const firstPnl = longDelta * -firstStockDrop, secondPnl = shortDelta * secondStockRise;
+      const exitCost = 50;
+      add("risk", `Two positions on the same underlying, stock ALFA, have position deltas of +${longDelta} and −${-shortDelta} ALFA-share equivalents. Both already include position size and multiplier. What is the signed net local delta with respect to ALFA?`, longDelta + shortDelta, `Both exposures refer to ALFA. Adding their signed deltas gives ${longDelta} − ${-shortDelta} = ${longDelta + shortDelta} ALFA-share equivalents. Multiplying this net delta by an ALFA move in dollars per share gives estimated dollar P&L.`, "ALFA-share equivalents");
+      add("risk", `A separate portfolio has position delta +${longDelta} ALFA-share equivalents and −${-shortDelta} BRAVO-share equivalents. In a joint scenario, ALFA falls $${money(firstStockDrop)} per ALFA share and BRAVO rises $${money(secondStockRise)} per BRAVO share. Hold deltas fixed and deduct one $${exitCost} portfolio exit cost. What is the estimated signed P&L in dollars?`, firstPnl + secondPnl - exitCost, `ALFA contributes ${longDelta} × (−${money(firstStockDrop)}) = −$${money(-firstPnl)}. BRAVO contributes −${-shortDelta} × ${money(secondStockRise)} = −$${money(-secondPnl)}. Combine the dollar effects and deduct the $${exitCost} cost once. A different joint shock would require its own per-stock moves.`);
       add("risk", `Assignments require $${8000 + x * 100} cash. Immediately available cash is $${6000 + x * 100}; committed sale proceeds arrive later. What is the immediate funding gap?`, 2000, `Immediate obligations minus immediately available funds. Later proceeds do not meet the stated current deadline.`);
       break;
+    }
     case 25:
       add("risk", `A fictional project has a $${1000 + x * 10} resource budget, $${300 + x * 5} data cost and $200 computing cost. What budget remains for review and contingency?`, 500 + x * 5, `Subtract known data and computing expenses. Data access and review resources should be feasible before a large study begins.`);
       add("valuation", `A protective put costs $${money(premium)}/share for ${n} standard contracts. What total cash premium is paid before fees?`, premium * n * 100, `Per-share premium × 100 × contracts. Insurance cost must be related to the objective and protection supplied.`);
@@ -157,11 +180,11 @@ function questions(moduleId: number, sequence: number): KeyedQuestion[] {
   }
   return rows;
 }
-export function makeGraduatePractice(moduleId: number, sequence: number): GraduatePracticeQuestion[] {
-  return questions(moduleId, sequence).map(({ id, skill, prompt, unit, hint }) => ({ id, skill, prompt, unit, hint }));
+export function makeGraduatePractice(moduleId: number, sequence: number, presentation: Presentation = "set"): GraduatePracticeQuestion[] {
+  return questions(moduleId, sequence, presentation).map(({ id, skill, prompt, unit, hint }) => ({ id, skill, prompt, unit, hint }));
 }
-export function gradeGraduatePractice(moduleId: number, sequence: number, answers: Record<string, number>): GraduatePracticeFeedback[] {
-  const rows = questions(moduleId, sequence);
+export function gradeGraduatePractice(moduleId: number, sequence: number, answers: Record<string, number>, presentation: Presentation = "set"): GraduatePracticeFeedback[] {
+  const rows = questions(moduleId, sequence, presentation);
   if (!answers || typeof answers !== "object" || Array.isArray(answers) || Object.keys(answers).length !== rows.length) throw new TypeError("Answer all three questions, with no additional fields.");
   return rows.map(({ expected, explanation, tolerance, ...question }) => {
     if (!Object.hasOwn(answers, question.id) || typeof answers[question.id] !== "number" || !Number.isFinite(answers[question.id]) || Math.abs(answers[question.id]) > 1e12) throw new TypeError("Every answer must be a finite number for the issued question.");

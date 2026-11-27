@@ -1,5 +1,7 @@
 "use client";
 
+import { DEFAULT_STUDY_ZONE,formatStudyTime } from "@/lib/study-time";
+
 import {useCallback,useEffect,useState} from "react";
 import {ArrowDownToLine,FilePlus2,Save,RefreshCw,FolderOpen} from "lucide-react";
 import "./capstone-artifacts.css";
@@ -15,9 +17,9 @@ const stages:{id:ArtifactKind;label:string;prompt:string}[]=[
  {id:"defense",label:"Defense and revision",prompt:"State the permitted conclusion, weakest assumption, failed ideas, actual reviewer challenges and your responses. Identify whether any review was self-review or externally supplied."},
 ];
 const empty=():ArtifactPayload=>({kind:"protocol",title:"",body:"",sourceUrl:""});
-const stamp=(date:string)=>new Date(date).toLocaleString("en-US",{timeZone:"America/Phoenix",dateStyle:"medium",timeStyle:"short"});
 async function request<T>(url:string,init?:RequestInit):Promise<T>{const r=await fetch(url,{...init,headers:{"Content-Type":"application/json",...init?.headers}});const v=await r.json();if(!r.ok){const detail=v&&typeof v==="object"&&"error" in v&&typeof v.error==="string"?v.error:"Your artifact record could not be loaded.";throw Object.assign(new Error(detail),{status:r.status});}return v as T;}
-export default function CapstoneArtifacts(){
+export default function CapstoneArtifacts({timezone=DEFAULT_STUDY_ZONE}:{timezone?:string}){
+  const stamp=(iso:string)=>formatStudyTime(iso,timezone);
  const [events,setEvents]=useState<ArtifactEvent[]>([]),[selected,setSelected]=useState<string|null>(null),[drafts,setDrafts]=useState<Record<string,ArtifactPayload>>({}),[bases,setBases]=useState<Record<string,number>>({}),[loaded,setLoaded]=useState(false),[signed,setSigned]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState<{text:string;error:boolean}|null>(null),[conflict,setConflict]=useState<string|null>(null);
  const latestById=new Map<string,ArtifactEvent>();for(const event of events){const previous=latestById.get(event.entityId);if(!previous||event.revision>previous.revision)latestById.set(event.entityId,event);}
  const latest=selected?latestById.get(selected):undefined,key=selected??"new",value=drafts[key]??latest?.payload??empty(),dirty=Object.keys(drafts).length>0;

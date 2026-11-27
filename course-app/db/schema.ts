@@ -21,6 +21,7 @@ export const notes = sqliteTable("notes", {
   lessonId: integer("lesson_id").notNull(),
   content: text("content").notNull(),
   updatedAt: text("updated_at").notNull(),
+  revision: integer("revision").notNull().default(1),
 }, t => [primaryKey({ columns: [t.userId, t.lessonId] })]);
 export const attempts = sqliteTable("attempts", {
   id: text("id").primaryKey(),

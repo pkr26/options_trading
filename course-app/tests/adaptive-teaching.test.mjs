@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTutorPlan, startTutorSession, advanceTutorSession } from '../lib/adaptive-teaching.ts';
+import { buildTutorPlan, startTutorSession, advanceTutorSession, presentTutorSession } from '../lib/adaptive-teaching.ts';
 import { makeGraduatePractice, gradeGraduatePractice } from '../lib/graduate-practice.ts';
+import { makeGraduatePractice as frozenPractice } from '../lib/graduate-practice-2026-11-14.ts';
 import { evaluateWriting } from '../lib/writing-feedback.ts';
 
 const now='2026-11-14T15:00:00.000Z';
@@ -109,4 +110,46 @@ test('prerequisite recommendations inspect the latest attempt even when server r
   const plan=buildTutorPlan({submissions:[],practice:[target,latestPrerequisite,olderPrerequisite]},now);
   assert.ok(plan.recommendations.some(r=>r.moduleId===18&&r.action==='remediate'));
   assert.equal(plan.recommendations.some(r=>r.moduleId===17&&r.action==='prepare'),false);
+});
+
+test('execution tutor retains the cash question’s fill prices across help, transfer and resume', () => {
+  let session = startTutorSession(11, 0, 'fills', now);
+  session = advanceTutorSession(session, {action:'answer', answer:2.10}, now);
+  assert.match(session.question.prompt, /\$2\.00\/share and one at \$2\.20\/share/);
+  session = advanceTutorSession(session, {action:'explain'}, now);
+  session = advanceTutorSession(session, {action:'answer', answer:422}, now);
+  const issued = session.question;
+  assert.match(issued.prompt, /\$2\.05\/share and one at \$2\.25\/share/);
+  const legacy = {...session, question:makeGraduatePractice(11, session.sequence)[1]};
+  const projected = presentTutorSession(legacy);
+  assert.deepEqual(projected.question, issued);
+  const fromReload = advanceTutorSession(legacy, {action:"answer", answer:434, questionPrompt:projected.question.prompt}, now);
+  assert.equal(fromReload.turns.at(-1).correct, true);
+  const reissued = advanceTutorSession(legacy, {action:'answer', answer:424}, now);
+  assert.deepEqual(reissued.question, issued);
+  assert.deepEqual(reissued.turns, legacy.turns);
+  const graded = advanceTutorSession(JSON.parse(JSON.stringify(reissued)), {action:'answer', answer:434}, now);
+  assert.equal(graded.turns.at(-1).prompt, issued.prompt);
+  assert.equal(graded.turns.at(-1).correct, true);
+});
+
+test("persisted Module 7 tutor shows the same decimal inputs used to grade a refreshed answer",()=>{
+  const session=startTutorSession(7,1,"greeks",now);
+  const old={...session,question:frozenPractice(7,1)[0]};
+  assert.notEqual(old.question.prompt,session.question.prompt);
+  const resumed=presentTutorSession(old);
+  assert.deepEqual(resumed.question,session.question);
+  const graded=gradeGraduatePractice(7,1,Object.fromEntries(makeGraduatePractice(7,1).map(item=>[item.id,0])));
+  const stale=advanceTutorSession(old,{action:"answer",answer:graded[0].expected,questionPrompt:old.question.prompt},now);
+  assert.deepEqual(stale.turns,old.turns);
+  const correct=advanceTutorSession(old,{action:"answer",answer:graded[0].expected,questionPrompt:resumed.question.prompt},now);
+  assert.equal(correct.turns.at(-1).correct,true);
+});
+
+test('retention recommendations supply the complete source instant for local display',()=>{
+  const saved='2026-11-01T00:20:00.000Z';
+  const plan=buildTutorPlan({submissions:[],practice:[attempt(1,0,[20,11.11,4410],saved)]},'2026-11-09T00:20:00.000Z');
+  const recommendation=plan.recommendations.find(item=>item.action==='retain');
+  assert.equal(recommendation.evidenceAt,saved);
+  assert.doesNotMatch(recommendation.reason,/2026-11-01/);
 });

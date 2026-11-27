@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { incompleteMemoFields, MEMO_FIELD_LIMIT } from "./memo-limits.ts";
 
 export const graduateModuleId = z.coerce.number().int().min(1).max(26);
+const memoField = z.string().max(MEMO_FIELD_LIMIT);
 export const graduateAnswers = z.object({
-  recommendation: z.string().max(6000), analysis: z.string().max(6000),
-  risks: z.string().max(6000), revision: z.string().max(6000), reflection: z.string().max(6000),
+  recommendation: memoField, analysis: memoField, risks: memoField, revision: memoField, reflection: memoField,
 }).strict();
 export const graduateSubmissionInput = z.object({
   moduleId: z.number().int().min(1).max(26),
@@ -11,8 +12,8 @@ export const graduateSubmissionInput = z.object({
   kind: z.enum(["draft", "submission"]), answers: graduateAnswers,
 }).strict().superRefine((value, context) => {
   if (value.kind !== "submission") return;
-  for (const field of ["recommendation", "analysis", "risks"] as const) {
-    if (value.answers[field].trim().length < 20) context.addIssue({code: "custom", path: ["answers", field], message: "Explain your initial decision, analysis, and risks before submitting."});
+  for (const field of incompleteMemoFields(value.answers)) {
+    context.addIssue({code: "custom", path: ["answers", field], message: "Explain your initial decision, analysis, and risks before submitting."});
   }
 });
 export const graduatePracticeInput = z.object({

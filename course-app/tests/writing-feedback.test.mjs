@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateWriting } from '../lib/writing-feedback.ts';
+import { MEMO_FIELD_LIMIT } from '../lib/memo-limits.ts';
 const blank=()=>({recommendation:'',analysis:'',risks:'',revision:'',reflection:''});
 const now='2026-11-14T15:00:00.000Z';
 test('every module has tailored formative prompts grounded in its actual rubric without fabricated grades',()=>{
@@ -68,4 +69,15 @@ test('initial formative feedback does not reveal the staged cash update or its a
   const output=JSON.stringify(report);
   assert.doesNotMatch(output,/5,490|6,980|8,000/);
   assert.match(report.numericalChecks.find(c=>c.label==='Updated C protective-put cash').explanation,/deferred/);
+});
+test('feedback accepts maximum-size Unicode writing and old short submissions, and returns intact code points in excerpts', () => {
+  const lead='I choose cash rather than the collar because ';
+  const recommendation=lead+'🌱'.repeat(MEMO_FIELD_LIMIT-Array.from(lead).length);
+  const full={recommendation,analysis:'🌱'.repeat(MEMO_FIELD_LIMIT),risks:'🌱'.repeat(MEMO_FIELD_LIMIT),revision:'',reflection:''};
+  const report=evaluateWriting(10,full,'saved');
+  const evidence=report.criteria[1].evidence;
+  assert.match(evidence,/🌱.*…$/);
+  assert.equal(evidence.isWellFormed(),true);
+  assert.throws(()=>evaluateWriting(10,{...full,analysis:full.analysis+'x'},'overlong'),TypeError);
+  assert.equal(evaluateWriting(10,{...full,recommendation:'🌱'.repeat(10)},'legacy').submissionId,'legacy');
 });

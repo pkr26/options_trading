@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { DEFAULT_STUDY_ZONE,formatStudyTime } from "@/lib/study-time";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownToLine, ArrowRight, BookOpen, CheckCircle2, ChevronRight, ClipboardList, Clock3, FileText, FlaskConical, GraduationCap, Lightbulb, LoaderCircle, MessageSquare, RefreshCw, Save, Search, ShieldCheck, Target } from "lucide-react";
 import graduateContent from "@/content/graduate.json";
+import { MEMO_FIELD_LIMIT, MEMO_REQUIRED_MIN, memoLength, memoReady } from "@/lib/memo-limits";
 import { competencyIds } from "@/lib/graduate-types";
 import type { CompetencyId, GraduateAnswer, GraduateModule, GraduatePracticeAttempt, GraduatePracticeQuestion, GraduateState, GraduateSubmission } from "@/lib/graduate-types";
 import type { TeachingState, RecordedReview } from "@/lib/teaching-types";
@@ -47,7 +50,6 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return value as T;
 }
 const ordered = (items: GraduateSubmission[]) => [...items].sort((a, b) => b.revision - a.revision);
-const stamp = (value: string) => new Date(value).toLocaleString("en-US", { timeZone: "America/Phoenix", dateStyle: "medium", timeStyle: "short" });
 const number = (value: number) => Number.isInteger(value) ? String(value) : String(Number(value.toFixed(5)));
 function readLocation() {
   const match = window.location.hash.match(/^#advanced\/module\/(\d+)(?:\/(program|seminar|case|practice|labs|evidence|teaching))?$/);
@@ -58,7 +60,8 @@ function MarkdownText({ body, onFileLink }: { body: string; onFileLink?: (file: 
   return <Markdown content={body} onFileLink={onFileLink} />;
 }
 
-export default function GraduateCourse({ onResource, onDirtyChange }: { onResource?: (file: string) => void; onDirtyChange?: (dirty: boolean) => void }) {
+export default function GraduateCourse({ onResource, onDirtyChange, timezone=DEFAULT_STUDY_ZONE }: { timezone?: string; onResource?: (file: string) => void; onDirtyChange?: (dirty: boolean) => void }) {
+  const stamp=(iso:string)=>formatStudyTime(iso,timezone);
   const [pane, setPane] = useState<Pane>("program");
   const [selectedId, setSelectedId] = useState(10);
   const [search, setSearch] = useState("");
@@ -79,6 +82,18 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
   const [practiceAnswers, setPracticeAnswers] = useState<Record<string, string>>({});
   const [practiceResult, setPracticeResult] = useState<GraduatePracticeAttempt | null>(null);
   const [hints, setHints] = useState<string[]>([]);
+  const practiceModule = useRef(10);
+  const practiceRequest = useRef(0);
+  const changePracticeModule = useCallback((id: number) => {
+    if (practiceModule.current === id) return;
+    practiceModule.current = id;
+    practiceRequest.current++;
+    setPractice(null);
+    setPracticeResult(null);
+    setPracticeAnswers({});
+    setHints([]);
+    setBusy(current => current === "practice" || current === "grade" ? "" : current);
+  }, []);
   const [reviewPrompt, setReviewPrompt] = useState(0);
   const [reviewResponse, setReviewResponse] = useState("");
   const [rehearsals, setRehearsals] = useState<Record<number, { prompt: number; response: string }>>({});
@@ -102,12 +117,12 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
   useEffect(() => {
     function restore() {
       const location = readLocation();
-      if (location) { setSelectedId(location.moduleId); setPane(location.pane); }
+      if (location) { changePracticeModule(location.moduleId); setSelectedId(location.moduleId); setPane(location.pane); }
     }
     const frame = window.requestAnimationFrame(restore);
     window.addEventListener("hashchange", restore);
     return () => { window.cancelAnimationFrame(frame); window.removeEventListener("hashchange", restore); };
-  }, []);
+  }, [changePracticeModule]);
   const dirty = Object.keys(drafts).length > 0 || reviewResponse.trim().length > 0 || Object.values(rehearsals).some(item => item.response.trim().length > 0) || (!!practice && !practiceResult && Object.values(practiceAnswers).some(value => value.trim()));
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => {
@@ -146,7 +161,7 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
   function selectModule(id: number, next?: Pane) {
     if (id !== selectedId && practice && !practiceResult && Object.values(practiceAnswers).some(value => value.trim()) && !window.confirm("This calculation set has unsaved answers. Leave this practice set and discard those answers? Your decision memo drafts will remain available in this session.")) return;
     setRehearsals(previous => ({ ...previous, [selectedId]: { prompt: reviewPrompt, response: reviewResponse } }));
-    setSelectedId(id); setPractice(null); setPracticeResult(null); setPracticeAnswers({}); setHints([]); setReviewPrompt(rehearsals[id]?.prompt ?? 0); setReviewResponse(rehearsals[id]?.response ?? ""); setMessage(null);
+    changePracticeModule(id); setSelectedId(id); setReviewPrompt(rehearsals[id]?.prompt ?? 0); setReviewResponse(rehearsals[id]?.response ?? ""); setMessage(null);
     if (next) setPane(next);
     window.history.replaceState(null, "", `#advanced/module/${id}/${next ?? pane}`);
     window.requestAnimationFrame(() => document.getElementById("graduate-heading")?.focus({ preventScroll: true }));
@@ -177,27 +192,35 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
     } finally { setBusy(""); }
   }
   async function startPractice() {
+    const request = ++practiceRequest.current;
     setBusy("practice"); setMessage(null);
     try {
       const value = await api<{ moduleId: number; sequence: number; questions: GraduatePracticeQuestion[] }>(`/api/graduate/practice?moduleId=${selected.id}`);
+      if (request !== practiceRequest.current) return;
+      if (value.moduleId !== selected.id) throw new Error("The returned practice set belongs to another module. Request this set again.");
       setPractice(value); setPracticeResult(null); setPracticeAnswers({}); setHints([]);
     } catch (error) {
+      if (request !== practiceRequest.current) return;
       if ((error as ApiFailure).status === 401) setSignedIn(false);
       setMessage({ text: (error as Error).message, error: true });
-    } finally { setBusy(""); }
+    } finally { if (request === practiceRequest.current) setBusy(""); }
   }
   async function submitPractice() {
-    if (!practice) return;
+    if (!practice || practice.moduleId !== practiceModule.current) return;
+    const request = ++practiceRequest.current;
     setBusy("grade"); setMessage(null);
     try {
       const result = await api<{ attempt: GraduatePracticeAttempt }>("/api/graduate/practice", { method: "POST", body: JSON.stringify({ moduleId: practice.moduleId, sequence: practice.sequence, answers: Object.fromEntries(Object.entries(practiceAnswers).map(([key, value]) => [key, Number(value)])) }) });
-      setPracticeResult(result.attempt); setRecord(previous => ({ ...previous, practice: [...previous.practice, result.attempt] }));
+      if (result.attempt.moduleId !== practice.moduleId || result.attempt.sequence !== practice.sequence) throw new Error("The saved result does not match the issued practice set.");
+      if (request === practiceRequest.current) setPracticeResult(result.attempt);
+      setRecord(previous => ({ ...previous, practice: [...previous.practice, result.attempt] }));
       window.dispatchEvent(new Event("graduate:evidence-changed"));
-    } catch (error) { setMessage({ text: (error as Error).message, error: true }); }
-    finally { setBusy(""); }
+    } catch (error) { if (request === practiceRequest.current) setMessage({ text: (error as Error).message, error: true }); }
+    finally { if (request === practiceRequest.current) setBusy(""); }
   }
   const practiceReady = !!practice && practice.questions.every(question => practiceAnswers[question.id]?.trim() && Number.isFinite(Number(practiceAnswers[question.id])));
-  const initialReady = answer.recommendation.trim().length >= 40 && answer.analysis.trim().length >= 40 && answer.risks.trim().length >= 20;
+  const overMemoLimit=fields.some(field=>memoLength(answer[field.key])>MEMO_FIELD_LIMIT);
+  const initialReady = memoReady(answer) && !overMemoLimit;
 
   return <div className="graduate-course">
     <header className="graduate-hero">
@@ -232,10 +255,11 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
 
     {pane === "case" && <>
       <section className="graduate-case-intro panel"><p className="eyebrow">THE DECISION CASE · FICTIONAL TEACHING DATA</p><h2>{selected.caseStudy.title}</h2><div className="graduate-case-step"><span>01</span><div><h3>Read the briefing and exhibits</h3><MarkdownText body={selected.caseStudy.brief} onFileLink={onResource} /><MarkdownText body={selected.caseStudy.exhibits} onFileLink={onResource} /></div></div><div className="graduate-decision-prompt"><Target size={21} /><MarkdownText body={selected.caseStudy.decisionPrompt} onFileLink={onResource} /></div></section>
-      <div className="graduate-case-layout"><section className="graduate-writing panel"><div className="section-row"><div><p className="eyebrow">YOUR DECISION MEMO</p><h2>Write the reasoning.</h2></div><span className="outlined-tag">{hasLocalEdits ? "Unsaved edits" : latest ? `Saved revision ${latest.revision}` : "New work"}</span></div><p className="graduate-writing-intro">Your initial answer matters. Save it before the case update, then create a later submission to show how your thinking developed. Each field accepts up to 6,000 characters.</p>
-        {fields.filter(field => updateVisible || (field.key !== "revision" && field.key !== "reflection")).map(field => <label className="graduate-answer-field" key={field.key}><strong>{field.title}</strong><span>{field.help}</span><textarea value={answer[field.key]} maxLength={6000} rows={field.key === "analysis" ? 8 : 5} onChange={event => edit(field.key, event.target.value)} disabled={busy === "save"} /><small>{answer[field.key].length.toLocaleString()} / 6,000 characters</small></label>)}
+      <div className="graduate-case-layout"><section className="graduate-writing panel"><div className="section-row"><div><p className="eyebrow">YOUR DECISION MEMO</p><h2>Write the reasoning.</h2></div><span className="outlined-tag">{hasLocalEdits ? "Unsaved edits" : latest ? `Saved revision ${latest.revision}` : "New work"}</span></div><p className="graduate-writing-intro">Your initial answer matters. Save it before the case update, then create a later submission to show how your thinking developed.</p>
+        {fields.filter(field => updateVisible || (field.key !== "revision" && field.key !== "reflection")).map(field => <label className="graduate-answer-field" key={field.key}><strong>{field.title}</strong><span>{field.help}</span><textarea value={answer[field.key]} aria-invalid={memoLength(answer[field.key])>MEMO_FIELD_LIMIT || undefined} rows={field.key === "analysis" ? 8 : 5} onChange={event => edit(field.key, event.target.value)} disabled={busy === "save"} /><small>{memoLength(answer[field.key]).toLocaleString("en-US")} / {MEMO_FIELD_LIMIT.toLocaleString("en-US")} characters</small></label>)}
         {conflictId === selected.id && <div className="graduate-conflict" role="alert"><h3>A newer version was saved.</h3><p>Your edits are still here. Compare them with the saved versions below. After reviewing, choose which version to keep.</p><div className="button-row"><button type="button" className="button button-secondary" onClick={() => { setBaseRevisions(previous => ({ ...previous, [selected.id]: latest?.revision ?? 0 })); setConflictId(null); setMessage({ text: "Your edits will be saved as a new version after the latest saved revision.", error: false }); }}>Keep my edits for the next revision</button><button type="button" className="text-button" onClick={() => { setDrafts(previous => { const next = { ...previous }; delete next[selected.id]; return next; }); setBaseRevisions(previous => ({ ...previous, [selected.id]: latest?.revision ?? 0 })); setConflictId(null); }}>Use the latest saved version</button></div></div>}
-        <div className="button-row"><button type="button" className="button button-secondary" disabled={!loaded || !signedIn || !!busy || conflictId === selected.id} onClick={() => void save("draft")}><Save size={15} />Save draft</button><button type="button" className="button button-primary" disabled={!loaded || !signedIn || !!busy || !initialReady || conflictId === selected.id} onClick={() => void save("submission", !updateVisible)}>{busy === "save" ? <LoaderCircle size={15} className="spin" /> : <CheckCircle2 size={15} />}{updateVisible ? "Submit this revision" : "Commit initial answer & reveal update"}</button></div><p className="graduate-caption">Initial submissions need at least 40 characters of recommendation, 40 of analysis, and 20 of risks. These are completeness checks; a reviewer uses the rubric to assess reasoning.</p>
+        {overMemoLimit&&<p role="alert">A memo field exceeds {MEMO_FIELD_LIMIT.toLocaleString("en-US")} characters. Shorten it to save the draft or submit.</p>}
+        <div className="button-row"><button type="button" className="button button-secondary" disabled={!loaded || !signedIn || !!busy || overMemoLimit || conflictId === selected.id} onClick={() => void save("draft")}><Save size={15} />Save draft</button><button type="button" className="button button-primary" disabled={!loaded || !signedIn || !!busy || !initialReady || conflictId === selected.id} onClick={() => void save("submission", !updateVisible)}>{busy === "save" ? <LoaderCircle size={15} className="spin" /> : <CheckCircle2 size={15} />}{updateVisible ? "Submit this revision" : "Commit initial answer & reveal update"}</button></div><p className="graduate-caption">Write at least {MEMO_REQUIRED_MIN} characters in each of the recommendation, analysis and risk fields, excluding surrounding spaces. The minimum and field counters use Unicode code points. A reviewer uses the rubric to assess the reasoning.</p>
       </section><aside className="graduate-case-aside"><section className="graduate-aside-card panel"><p className="eyebrow">A GUIDED DEFENSE</p><h3>Prepare to be challenged.</h3><ol>{selected.caseStudy.defense.map(prompt => <li key={prompt}>{prompt}</li>)}</ol><p className="graduate-caption">Use these prompts with a peer, tutor, or independent reviewer. Record the actual response and feedback in your reflection.</p></section><section className="graduate-aside-card panel"><p className="eyebrow">EVALUATION STANDARD</p>{selected.caseStudy.rubric.map(item => <div className="graduate-rubric-item" key={item.dimension}><strong>{item.dimension}</strong><p>{item.excellent}</p></div>)}<p className="graduate-caption">Written work is saved for review. The app does not infer an academic grade from the length of a response.</p></section></aside></div>
       <section className="graduate-update panel"><div className="graduate-case-step"><span>02</span><div><h2>New information arrives.</h2>{updateVisible ? <><MarkdownText body={selected.caseStudy.update} onFileLink={onResource} /><p className="graduate-caption">{previewed.includes(selected.id) ? "Preview mode: the update was opened without a saved initial commitment. Treat subsequent work as informed practice." : "Your saved versions let you compare the initial recommendation with your later response."}</p><button type="button" className="text-button" onClick={() => document.querySelector<HTMLTextAreaElement>(".graduate-answer-field:nth-last-of-type(2) textarea")?.focus()}>Return to your response above<ArrowRight size={14} /></button></> : <><p>Save your initial recommendation to reveal the update and open the revision fields.</p>{hasCommitment && <button type="button" className="button button-primary" onClick={() => setRevealed(previous => [...new Set([...previous, selected.id])])}>Open update for my saved case<ArrowRight size={15} /></button>}<button type="button" className="text-button graduate-preview" onClick={() => { setRevealed(previous => [...new Set([...previous, selected.id])]); setPreviewed(previous => [...new Set([...previous, selected.id])]); }}>Preview update without a saved commitment</button><p className="graduate-caption">Preview is available for exploration. It does not establish an unseen assessment.</p></>}</div></div></section>
       {updateVisible && <section className="graduate-debrief panel"><div className="graduate-case-step"><span>03</span><div><h2>Debrief the decision.</h2><p>Write your revision before opening the analysis. Compare the reasoning and assumptions, then identify the correction you will carry into another case.</p><button type="button" className="button button-secondary" onClick={() => setDebriefs(previous => previous.includes(selected.id) ? previous.filter(id => id !== selected.id) : [...previous, selected.id])}>{debriefVisible ? "Hide debrief" : "Reveal debrief and annotated submissions"}<ChevronRight size={15} /></button></div></div>{debriefVisible && <div className="graduate-debrief-content"><MarkdownText body={selected.caseStudy.debrief} onFileLink={onResource} /><h3>Compare the quality of the reasoning</h3>{selected.caseStudy.samples.map(sample => <details className="graduate-sample" key={sample.level}><summary>{sample.level}</summary><MarkdownText body={sample.body} onFileLink={onResource} /></details>)}<div className="button-row"><button type="button" className="button button-primary" onClick={() => navigate("practice")}>Try a different calculation case<ArrowRight size={15} /></button></div></div>}</section>}
@@ -252,8 +276,8 @@ export default function GraduateCourse({ onResource, onDirtyChange }: { onResour
       {selectedPractice.length > 0 && <section className="graduate-history panel"><h2>Checks for this module</h2>{selectedPractice.map(attempt => <details key={attempt.id}><summary>Sequence {attempt.sequence} · {attempt.score}/{attempt.total} correct · {stamp(attempt.createdAt)}</summary>{attempt.feedback.map(item => <div className="graduate-history-answer" key={item.id}><h3>{item.prompt}</h3><p>Your answer: {number(item.answer)} {item.unit}. Expected: {number(item.expected)} {item.unit}.</p><p>{item.explanation}</p></div>)}</details>)}</section>}
     </>}
 
-    <div hidden={pane !== "teaching"}><TeachingStudio onModule={moduleId => selectModule(moduleId,"seminar")} onEvidence={setTeachingEvidence}/></div>
-    <div hidden={pane !== "evidence"}><CapstoneArtifacts /></div>
+    <div hidden={pane !== "teaching"}><TeachingStudio timezone={timezone} onModule={moduleId => selectModule(moduleId,"seminar")} onEvidence={setTeachingEvidence}/></div>
+    <div hidden={pane !== "evidence"}><CapstoneArtifacts timezone={timezone}/></div>
     {pane === "labs" && <><GraduateLabs /><PortfolioResearchLabs /></>}
 
     {pane === "evidence" && <>

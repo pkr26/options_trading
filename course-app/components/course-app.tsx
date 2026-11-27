@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { ArrowDownToLine, ArrowLeft, ArrowRight, BookOpen, Bookmark, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Clock3, ExternalLink, FileCheck2, FileText, FlaskConical, GraduationCap, LayoutDashboard, Leaf, ListChecks, LoaderCircle, LockKeyhole, Menu, NotebookPen, RefreshCw, Search, Settings2, ShieldCheck, Sparkles, Sprout, Target, X } from "lucide-react";
 import { lessons, modules } from "@/lib/course";
 import type { LearningState, Lesson, Quiz, QuizResult } from "@/lib/types";
 import Markdown from "./markdown";
+import { DEFAULT_STUDY_ZONE,formatStudyTime } from "@/lib/study-time";
+import LessonNote from "./lesson-note";
+import PracticalLedger from "./practical-ledger";
 import PayoffLab from "./payoff-lab";
 import GraduateCourse from "./graduate-course";
 
@@ -61,6 +64,13 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const [busy,setBusy]=useState("");
   const [notice,setNotice]=useState<Notice|null>(null);
   const [mobileOpen,setMobileOpen]=useState(false);
+  const menuTrigger=useRef<HTMLButtonElement>(null);
+  const sidebar=useRef<HTMLElement>(null);
+  const focusFrame=useRef(0);
+  const closeDrawer=useCallback(()=>{
+    setMobileOpen(false);
+    requestAnimationFrame(()=>menuTrigger.current?.focus({preventScroll:true}));
+  },[]);
   const [selectedId,setSelectedId]=useState(1);
   const [expandedModule,setExpandedModule]=useState(1);
   const [search,setSearch]=useState("");
@@ -68,9 +78,12 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const [selectedResource,setSelectedResource]=useState<string|null>(null);
   const [library,setLibrary]=useState<Resource[]>([]);
   const [resourceLoading,setResourceLoading]=useState(false);
-  const [drafts,setDrafts]=useState<Record<number,string>>({});
+  const restoringLocation=useRef(false);
+  const advancedLocation=useRef("#advanced/module/10/program");
+  const [guest,setGuest]=useState(false);
   const [lessonTried,setLessonTried]=useState(false);
   const [quizModule,setQuizModule]=useState(1);
+  const quizRequest=useRef(0);
   const [quiz,setQuiz]=useState<Quiz|null>(null);
   const [answers,setAnswers]=useState<Record<string,number>>({});
   const [result,setResult]=useState<QuizResult|null>(null);
@@ -79,16 +92,9 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const [dailyMinutesDraft,setDailyMinutes]=useState<number|null>(null);
   const [timezoneDraft,setTimezone]=useState<string|null>(null);
   const dailyMinutes=dailyMinutesDraft??data?.profile.dailyMinutes??15;
-  const timezone=timezoneDraft??data?.profile.timezone??"America/Phoenix";
+  const timezone=timezoneDraft??data?.profile.timezone??DEFAULT_STUDY_ZONE;
   const [now,setNow]=useState(0);
   const activeResource=useRef<string|null>(null);
-  useEffect(()=>{
-    const restoreAdvanced=()=>{if(window.location.hash.startsWith("#advanced/")){setGraduateOpened(true);setView("graduate");}};
-    queueMicrotask(()=>{setNavigationReady(true);restoreAdvanced();});
-    window.addEventListener("hashchange",restoreAdvanced);
-    return()=>window.removeEventListener("hashchange",restoreAdvanced);
-  },[]);
-
   const showError=useCallback((error:unknown,retry?:()=>void,retryLabel="Retry")=>{
     const e=error as Error&{status?:number};
     setNotice({text:e.message??"We couldn't finish that. Please try again.",kind:"error",auth:e.status===401,retry,retryLabel});
@@ -101,22 +107,28 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
     setLoading(true);setNotice(null);
     try{await refresh();}catch(error){showError(error,reload,"Reload learning record");}finally{setLoading(false);}
   },[refresh,showError]);
+  const mergeCatalog=useCallback((catalog:Resource[])=>{
+    setLibrary(previous=>catalog.map(item=>{
+      const cached=previous.find(record=>record.file===item.file);
+      return cached?.body!==undefined ? {...item,body:cached.body} : item;
+    }));
+  },[]);
   const reloadLibrary=useCallback(async function reload(){
     setNotice(null);
-    try{setLibrary(await request<Resource[]>("/api/resources"));}catch(error){showError(error,reload);}
-  },[showError]);
+    try{mergeCatalog(await request<Resource[]>("/api/resources"));}catch(error){showError(error,reload);}
+  },[showError,mergeCatalog]);
   useEffect(()=>{
     let active=true;
     request<LearningState>("/api/learning").then(state=>{if(active){setData(state);setNow(Date.now());}}).catch(error=>{
-      if(active&&(error as Error&{status?:number}).status!==401)showError(error,reloadLearning,"Reload learning record");
+      if(active){if((error as Error&{status?:number}).status===401)setGuest(true);else showError(error,reloadLearning,"Reload learning record");}
     }).finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[reloadLearning,showError]);
   useEffect(()=>{
     let active=true;
-    request<Resource[]>("/api/resources").then(resources=>{if(active)setLibrary(resources);}).catch(error=>{if(active)showError(error,reloadLibrary);});
+    request<Resource[]>("/api/resources").then(resources=>{if(active)mergeCatalog(resources);}).catch(error=>{if(active)showError(error,reloadLibrary);});
     return()=>{active=false;};
-  },[reloadLibrary,showError]);
+  },[reloadLibrary,showError,mergeCatalog]);
   useEffect(()=>{
     const updateClock=()=>setNow(Date.now());
     const whenVisible=()=>{if(document.visibilityState==="visible")updateClock();};
@@ -126,14 +138,38 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
     return()=>{window.clearInterval(timer);window.removeEventListener("focus",updateClock);document.removeEventListener("visibilitychange",whenVisible);};
   },[]);
   useEffect(()=>{
-    const closeOnEscape=(event:KeyboardEvent)=>{if(event.key==="Escape")setMobileOpen(false);};
-    window.addEventListener("keydown",closeOnEscape);
-    return()=>window.removeEventListener("keydown",closeOnEscape);
-  },[]);
+    if(!mobileOpen)return;
+    const drawer=sidebar.current;
+    if(!drawer)return;
+    const controls=()=>Array.from(drawer.querySelectorAll<HTMLElement>('button:not(:disabled),a[href]'))
+      .filter(element=>element.getClientRects().length>0);
+    controls()[0]?.focus();
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.key==="Escape"){event.preventDefault();closeDrawer();return;}
+      if(event.key!=="Tab")return;
+      const items=controls();
+      const target=event.shiftKey ? items.at(-1) : items[0];
+      if(!drawer.contains(document.activeElement) || document.activeElement===(event.shiftKey?items[0]:items.at(-1))){
+        event.preventDefault();target?.focus();
+      }
+    };
+    const media=window.matchMedia("(max-width:760px)");
+    const resize=()=>{
+      if(media.matches)return;
+      if(document.activeElement?.classList.contains("drawer-close"))
+        drawer.querySelector<HTMLElement>('[aria-current="page"],.brand')?.focus();
+      setMobileOpen(false);
+    };
+    window.addEventListener("keydown",onKey);
+    media.addEventListener("change",resize);
+    return()=>{window.removeEventListener("keydown",onKey);media.removeEventListener("change",resize);};
+  },[mobileOpen,closeDrawer]);
+  useEffect(()=>()=>cancelAnimationFrame(focusFrame.current),[]);
   const completed=useMemo(()=>new Set(data?.progress.map(p=>p.lessonId)??[]),[data]);
   const passed=useMemo(()=>new Set(data?.attempts.filter(a=>a.passed).map(a=>a.moduleId)??[]),[data]);
   const due=useMemo(()=>data?.progress.filter(p=>new Date(p.nextReviewAt).getTime()<=now).sort((a,b)=>a.nextReviewAt.localeCompare(b.nextReviewAt))??[],[data,now]);
   const currentLesson=lessons.find(l=>l.id===selectedId)??lessons[0];
+  const solutionSection=currentLesson.id===63?/<details>\s*<summary>([^<]*)<\/summary>([\s\S]*?)<\/details>/i.exec(currentLesson.body):null;
   const currentModule=modules.find(m=>m.id===currentLesson.moduleId)??modules[0];
   const nextLesson=lessons.find(l=>!completed.has(l.id));
   const pendingCheckpoint=modules.find(m=>m.lessons.every(l=>completed.has(l.id))&&!passed.has(m.id));
@@ -142,16 +178,30 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
   const firstName=displayName&&!displayName.includes("@")?displayName.split(" ")[0]:"";
   const initials=displayName?displayName[0].toUpperCase():"Y";
   const activeNavigation=view==="lesson"||view==="checkpoint"?"course":view;
-  const noteContent=(id:number)=>drafts[id]??data?.notes.find(n=>n.lessonId===id)?.content??"";
-  const noteDirty=(id:number)=>noteContent(id)!==(data?.notes.find(n=>n.lessonId===id)?.content??"");
   const canComplete=(lesson:Lesson)=>!!data&&(lesson.id===1||completed.has(lesson.id-1))&&(lesson.id===modules.find(m=>m.id===lesson.moduleId)?.lessons[0].id?(lesson.moduleId===1||passed.has(lesson.moduleId-1)):true);
-  const focusContent=()=>window.requestAnimationFrame(()=>document.getElementById("main-content")?.focus({preventScroll:true}));
+  const focusContent=()=>{
+    cancelAnimationFrame(focusFrame.current);
+    const previous=document.activeElement;
+    focusFrame.current=requestAnimationFrame(()=>{
+      if(document.activeElement===previous || document.activeElement===document.body)
+        document.getElementById("main-content")?.focus({preventScroll:true});
+    });
+  };
   const closeResource=()=>{activeResource.current=null;setSelectedResource(null);setResourceLoading(false);};
-  const clearAdvancedHash=()=>{if(window.location.hash.startsWith("#advanced/"))window.history.replaceState(null,"",window.location.pathname+window.location.search);};
-  const go=(next:View)=>{if(next==="graduate")setGraduateOpened(true);else clearAdvancedHash();activeResource.current=null;setNow(Date.now());setView(next);setMobileOpen(false);setNotice(null);if(next!=="course")setSearch("");if(next==="resources")closeResource();window.scrollTo({top:0,behavior:"smooth"});focusContent();};
-  const openLesson=(id:number)=>{clearAdvancedHash();activeResource.current=null;setSelectedId(id);setLessonTried(false);setView("lesson");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();};
+  const rememberLocation=(hash:string)=>{
+    if(!hash.startsWith("#checkpoint/")) {
+      quizRequest.current++;
+      setBusy(value=>value.startsWith("quiz-") ? "" : value);
+    }
+    if(restoringLocation.current || window.location.hash===hash) return;
+    if(window.location.hash.startsWith("#advanced/"))advancedLocation.current=window.location.hash;
+    window.history.pushState(null,"",window.location.pathname+window.location.search+hash);
+  };
+  const signInHref=view==="lesson" ? "/signin-with-chatgpt?return_to="+encodeURIComponent("/#lesson/"+selectedId) : "/signin-with-chatgpt?return_to=%2F";
+  const go=(next:View)=>{if(next==="graduate")setGraduateOpened(true);rememberLocation(next==="graduate"?advancedLocation.current:next==="overview"?"":"#"+next);activeResource.current=null;setNow(Date.now());setView(next);setMobileOpen(false);setNotice(null);if(next!=="course")setSearch("");if(next==="resources")closeResource();window.scrollTo({top:0,behavior:"smooth"});focusContent();};
+  const openLesson=(id:number)=>{rememberLocation("#lesson/"+id);activeResource.current=null;setSelectedId(id);setLessonTried(false);setView("lesson");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();};
   const openResource=(file:string)=>{
-    clearAdvancedHash();
+    rememberLocation("#resource/"+encodeURIComponent(file));
     activeResource.current=file;setSelectedResource(file);setView("resources");setMobileOpen(false);setNotice(null);window.scrollTo({top:0,behavior:"smooth"});focusContent();
     if(library.some(resource=>resource.file===file&&resource.body!==undefined)){setResourceLoading(false);return;}
     async function load(){
@@ -187,17 +237,24 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
     const success=await mutate("complete","/api/progress",{lessonId:currentLesson.id,action:"complete"});
     if(success){setNotice({text:"Lesson completed. Your progress and next review are saved.",kind:"success"});}
   };
-  const saveNote=async(id:number)=>{
-    const success=await mutate("note","/api/notes",{lessonId:id,content:noteContent(id)},"PUT");
-    if(success)setNotice({text:"Your note is saved in your notebook.",kind:"success"});
-  };
   const startQuiz=async(moduleId:number)=>{
-    activeResource.current=null;setQuizModule(moduleId);setQuiz(null);setResult(null);setAnswers({});setView("checkpoint");setBusy("quiz-load");setNotice(null);window.scrollTo({top:0,behavior:"smooth"});
-    try{setQuiz(await request<Quiz>(`/api/quiz?moduleId=${moduleId}`));}catch(e){showError(e,()=>startQuiz(moduleId),"Reload checkpoint");}finally{setBusy("");}
+    const ticket=++quizRequest.current;
+    const current=()=>ticket===quizRequest.current && window.location.hash==="#checkpoint/"+moduleId;
+    rememberLocation("#checkpoint/"+moduleId);activeResource.current=null;setQuizModule(moduleId);setQuiz(null);setResult(null);setAnswers({});setView("checkpoint");setBusy("quiz-load");setNotice(null);window.scrollTo({top:0,behavior:"smooth"});
+    try {
+      const issued=await request<Quiz>(`/api/quiz?moduleId=${moduleId}`);
+      if(!current())return;
+      if(issued.moduleId!==moduleId)throw new Error("This checkpoint changed. Reload it before answering.");
+      setQuiz(issued);
+    } catch(e){if(current())showError(e,()=>startQuiz(moduleId),"Reload checkpoint");}
+    finally{if(current())setBusy("");}
   };
   const submitQuiz=async()=>{
-    if(!quiz)return;setBusy("quiz-submit");setNotice(null);
-    try{const graded=await request<QuizResult>("/api/quiz",{method:"POST",body:JSON.stringify({moduleId:quiz.moduleId,variant:quiz.variant,revision:quiz.revision,answers})});setResult(graded);await refresh();window.scrollTo({top:0,behavior:"smooth"});}catch(e){showError(e,()=>startQuiz(quiz.moduleId),"Reload checkpoint");}finally{setBusy("");}
+    if(!quiz || quiz.moduleId!==quizModule)return;
+    const ticket=++quizRequest.current;
+    const current=()=>ticket===quizRequest.current && window.location.hash==="#checkpoint/"+quiz.moduleId;
+    setBusy("quiz-submit");setNotice(null);
+    try{const graded=await request<QuizResult>("/api/quiz",{method:"POST",body:JSON.stringify({moduleId:quiz.moduleId,variant:quiz.variant,revision:quiz.revision,answers})});if(current()){setResult(graded);window.scrollTo({top:0,behavior:"smooth"});}await refresh();}catch(e){if(current())showError(e,()=>startQuiz(quiz.moduleId),"Reload checkpoint");}finally{if(current())setBusy("");}
   };
   const review=async(recalled:boolean)=>{
     if(!reviewId)return;const revision=data?.progress.find(item=>item.lessonId===reviewId)?.reviewRevision;
@@ -205,28 +262,69 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
     if(success){setReviewId(null);setReviewRevealed(false);setNotice({text:recalled?"Review saved. We'll bring this idea back at a longer interval.":"Review saved. This idea will return soon for more practice.",kind:"success"});}
   };
 
-  const renderNoteEditor=(lessonId:number)=><section className="study-note panel"><div className="section-row"><h3><NotebookPen size={16}/>Your own words</h3><span className="tiny muted">{noteDirty(lessonId)?"Unsaved":"Saved notes"}</span></div><p>Explain the idea. Record your answer or a question to come back to.</p><label className="sr-only" htmlFor={`note-${lessonId}`}>Notes for lesson {lessonId}</label><textarea id={`note-${lessonId}`} maxLength={10000} rows={7} placeholder="The idea as I understand it…" value={noteContent(lessonId)} onChange={e=>setDrafts(prev=>({...prev,[lessonId]:e.target.value}))}/><div className="note-footer"><span>{noteContent(lessonId).length.toLocaleString()} / 10,000</span><button className="button button-small button-secondary" disabled={!data||!!busy||!noteDirty(lessonId)} onClick={()=>saveNote(lessonId)}>{busy==="note"?<LoaderCircle size={14} className="spin"/>:<Check size={14}/>}Save note</button></div>{!data&&<p className="fine-print">Sign in to save. Your draft stays here while this page is open.</p>}</section>;
+  const restoreLocation=useEffectEvent(()=>{
+    const hash=window.location.hash;
+    restoringLocation.current=true;
+    try {
+      if(hash.startsWith("#advanced/")) {advancedLocation.current=hash;setGraduateOpened(true);setView("graduate");return;}
+      const lesson=/^#lesson\/(\d+)$/.exec(hash);
+      if(lesson && lessons.some(item=>item.id===Number(lesson[1]))) {openLesson(Number(lesson[1]));return;}
+      if(hash.startsWith("#resource/")) {try {openResource(decodeURIComponent(hash.slice(10)));} catch {go("resources");}return;}
+      const checkpoint=/^#checkpoint\/(\d+)$/.exec(hash);
+      if(checkpoint && modules.some(item=>item.id===Number(checkpoint[1]))) {void startQuiz(Number(checkpoint[1]));return;}
+      const basic=hash.slice(1);
+      if(["overview","course","review","notebook","practice","resources","settings"].includes(basic)) go(basic as View);
+      else if(!hash) go("overview");
+    } finally {restoringLocation.current=false;}
+  });
+  useEffect(()=>{
+    let frame=0;
+    const restore=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{restoreLocation();setNavigationReady(true);});};
+    if(window.location.hash)restore();
+    else frame=requestAnimationFrame(()=>setNavigationReady(true));
+    window.addEventListener("popstate",restore);window.addEventListener("hashchange",restore);
+    return()=>{cancelAnimationFrame(frame);window.removeEventListener("popstate",restore);window.removeEventListener("hashchange",restore);};
+  },[]);
+  const noteOwner=data?.user.id??data?.user.email??null;
+  const practical=data?.practical;
+  const practicalLink=practical && (practical.started>0 || completed.has(62) || completed.has(63)) && <section className="panel practical-summary">
+    <h2>Lesson 63 practical</h2>
+    <p>Reading {completed.has(63)?"completed":"in progress"} · {practical.initialAttempts}/4 initial cases submitted.</p>
+    <p>{practical.firstCorrect}/4 initial ledgers and {practical.transferCorrect}/4 changed ledgers had every entry correct on the first attempt with no reported help.</p>
+    <button className="button button-secondary" onClick={()=>openLesson(63)}>{practical.nextTransferAt && Date.parse(practical.nextTransferAt)<=now?"Open due transfer":practical.started?"Resume case ledgers":"Open case ledgers"}</button>
+  </section>;
+  const renderNoteEditor=(lessonId:number)=> loading || (!data&&!guest) ? null : <LessonNote key={`${noteOwner??"guest"}-${lessonId}`}
+    lessonId={lessonId} owner={noteOwner} expectedOwnerId={data?.user.id} saved={data?.notes.find(n=>n.lessonId===lessonId)} signInHref={signInHref}
+    onSaved={note=>setData(old=>{
+      if(!old || (old.user.id??old.user.email)!==noteOwner)return old;
+      const existing=old.notes.find(n=>n.lessonId===lessonId);
+      if(note && existing && existing.revision>note.revision)return old;
+      const rest=old.notes.filter(n=>n.lessonId!==lessonId);
+      return {...old,notes:note?[...rest,note]:rest};
+    })}/>;
 
   return <div className="app-shell">
-    <a className="skip-link" href="#main-content">Skip to content</a>
-    {mobileOpen&&<button className="sidebar-scrim" aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>}
-    <aside className={`sidebar ${mobileOpen?"sidebar-open":""}`} aria-label="Main navigation">
+    <a className="skip-link" href="#main-content" inert={mobileOpen}>Skip to content</a>
+    {mobileOpen&&<button className="sidebar-scrim" tabIndex={-1} aria-hidden="true" onClick={closeDrawer}/>}
+    <aside ref={sidebar} id="classroom-navigation" className={`sidebar ${mobileOpen?"sidebar-open":""}`} role={mobileOpen?"dialog":undefined} aria-modal={mobileOpen||undefined} aria-label="Main navigation">
+      {mobileOpen&&<button type="button" className="drawer-close icon-button" aria-label="Close navigation" onClick={closeDrawer}><X size={19}/></button>}
       <button className="brand" onClick={()=>go("overview")} aria-label="First Principles home"><span className="brand-mark"><span>f</span><i/></span><span>first principles<small>OPTIONS, FROM ZERO.</small></span></button>
       <div className="sidebar-course"><span className="sidebar-course-icon"><Leaf size={16}/></span><div><strong>Options Academy</strong><span>Foundations to advanced study</span></div><ChevronDown size={14}/></div>
       <p className="nav-caption">YOUR CLASSROOM</p>
       <nav aria-busy={!navigationReady}>{navigation.map(item=><button key={item.id} disabled={!navigationReady} className={`nav-item ${activeNavigation===item.id?"active":""}`} onClick={()=>go(item.id)} aria-current={activeNavigation===item.id?"page":undefined}><item.icon size={18}/><span>{item.label}</span>{item.id==="review"&&due.length>0&&<span className="nav-count">{due.length}</span>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="gentle-card"><span className="gentle-icon"><Sprout size={22}/></span><strong>Small steps. Strong foundations.</strong><p>Understanding comes before trading. You&apos;re right where you need to be.</p></div><button className={`nav-item ${view==="settings"?"active":""}`} onClick={()=>go("settings")}><Settings2 size={18}/><span>Learning preferences</span></button><div className="sidebar-person"><span className="avatar">{initials}</span><div><strong>{firstName||"Your learning space"}</strong><span>{data?"Personal learning account":"Ready when you are"}</span></div>{!data&&<a href="/signin-with-chatgpt?return_to=%2F" target="_top" className="sign-in-link">Sign in</a>}</div></div>
+      <div className="sidebar-bottom"><div className="gentle-card"><span className="gentle-icon"><Sprout size={22}/></span><strong>Small steps. Strong foundations.</strong><p>Understanding comes before trading. You&apos;re right where you need to be.</p></div><button className={`nav-item ${view==="settings"?"active":""}`} onClick={()=>go("settings")}><Settings2 size={18}/><span>Learning preferences</span></button><div className="sidebar-person"><span className="avatar">{initials}</span><div><strong>{firstName||"Your learning space"}</strong><span>{data?"Personal learning account":"Ready when you are"}</span></div>{!data&&<a href={signInHref} target="_top" className="sign-in-link">Sign in</a>}</div></div>
     </aside>
 
-    <div className="workspace">
-      <header className="topbar"><div className="topbar-context"><button className="icon-button mobile-menu" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(v=>!v)}><Menu size={21}/></button><span className="topbar-breadcrumb">Your classroom <ChevronRight size={12}/><strong>{view==="lesson"?`Lesson ${num(currentLesson.id)}`:view==="checkpoint"?"Checkpoint":navigation.find(n=>n.id===view)?.label??"Preferences"}</strong></span></div><div className="topbar-actions"><label className="search-field"><Search size={16}/><span className="sr-only">Search lessons</span><input placeholder="Find a lesson…" value={search} onChange={e=>{setSearch(e.target.value);setView("course");}}/><kbd>⌕</kbd></label><span className="learning-badge"><span/>At your pace</span><button className="avatar avatar-small" onClick={()=>go("settings")} aria-label="Open your learning preferences">{initials}</button></div></header>
+    <div className="workspace" inert={mobileOpen}>
+      <header className="topbar"><div className="topbar-context"><button ref={menuTrigger} className="icon-button mobile-menu" aria-controls="classroom-navigation" aria-haspopup="dialog" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(v=>!v)}><Menu size={21}/></button><span className="topbar-breadcrumb">Your classroom <ChevronRight size={12}/><strong>{view==="lesson"?`Lesson ${num(currentLesson.id)}`:view==="checkpoint"?"Checkpoint":navigation.find(n=>n.id===view)?.label??"Preferences"}</strong></span></div><div className="topbar-actions"><label className="search-field"><Search size={16}/><span className="sr-only">Search lessons</span><input placeholder="Find a lesson…" onFocus={()=>cancelAnimationFrame(focusFrame.current)} onInput={()=>cancelAnimationFrame(focusFrame.current)} value={search} onChange={e=>{setSearch(e.target.value);rememberLocation("#course");setView("course");}}/><kbd>⌕</kbd></label><span className="learning-badge"><span/>At your pace</span><button className="avatar avatar-small" onClick={()=>go("settings")} aria-label="Open your learning preferences">{initials}</button></div></header>
       <main id="main-content" className={`main-content ${view==="lesson"?"reader-main":""}`} tabIndex={-1}>
-        {notice&&<div className={`notice notice-${notice.kind}`} role={notice.kind==="error"?"alert":"status"}>{notice.kind==="error"?<CircleHelp size={18}/>:<CheckCircle2 size={18}/>}<span>{notice.text}{notice.auth&&<> <a href="/signin-with-chatgpt?return_to=%2F" target="_top">Sign in with ChatGPT</a> to save your progress.</>}</span>{notice.kind==="error"&&!notice.auth&&notice.retry&&<button disabled={!!busy} onClick={notice.retry}>{notice.retryLabel??"Retry"}</button>}<button className="icon-button" aria-label="Dismiss message" onClick={()=>setNotice(null)}><X size={15}/></button></div>}
+        {notice&&<div className={`notice notice-${notice.kind}`} role={notice.kind==="error"?"alert":"status"}>{notice.kind==="error"?<CircleHelp size={18}/>:<CheckCircle2 size={18}/>}<span>{notice.text}{notice.auth&&<> <a href={signInHref} target="_top">Sign in with ChatGPT</a> to save your progress.</>}</span>{notice.kind==="error"&&!notice.auth&&notice.retry&&<button disabled={!!busy} onClick={notice.retry}>{notice.retryLabel??"Retry"}</button>}<button className="icon-button" aria-label="Dismiss message" onClick={()=>setNotice(null)}><X size={15}/></button></div>}
         {loading&&<div className="loading-line" role="status"><LoaderCircle size={15} className="spin"/>Opening your learning record…</div>}
 
         {view==="overview"&&<>
           <div className="page-heading"><div><p className="eyebrow">A LITTLE LEARNING, EVERY DAY</p><h1>{firstName?`Welcome, ${firstName}.`:"A good place to begin."}</h1><p>You don&apos;t need to know anything yet. We&apos;ll build from here.</p></div><span className="outlined-tag"><Sprout size={14}/>Absolute beginner friendly</span></div>
-          <div className="dashboard-top"><section className="hero-card"><div className="hero-copy"><span className="hero-label"><span/>{completed.size>0?"YOUR NEXT SMALL STEP":"YOUR JOURNEY STARTS HERE"}</span><h2>Big understanding.<br/>Small lessons.</h2><p>One clear idea. One simple example.<br/>A little more confidence, every day.</p><button className="button button-primary" onClick={()=>pendingCheckpoint?startQuiz(pendingCheckpoint.id):nextLesson?openLesson(nextLesson.id):go("review")}>{pendingCheckpoint?"Take your checkpoint":completed.size===lessons.length?"Review what you've learned":completed.size>0?"Continue learning":"Start my first lesson"}<ArrowRight size={17}/></button><span className="hero-meta"><Clock3 size={13}/>5–10 minutes<span className="dot-separator">·</span>No account or real money needed to read</span></div><JourneyIllustration/></section>
+          {practicalLink}
+          <div className="dashboard-top"><section className="hero-card"><div className="hero-copy"><span className="hero-label"><span/>{completed.size>0?"YOUR NEXT SMALL STEP":"YOUR JOURNEY STARTS HERE"}</span><h2>Big understanding.<br/>Small lessons.</h2><p>One clear idea. One simple example.<br/>A little more confidence, every day.</p><button className="button button-primary" onClick={()=>pendingCheckpoint?startQuiz(pendingCheckpoint.id):nextLesson?openLesson(nextLesson.id):go("review")}>{pendingCheckpoint?"Take your checkpoint":completed.size===lessons.length?"Review what you've learned":completed.size>0?"Continue learning":"Start my first lesson"}<ArrowRight size={17}/></button><span className="hero-meta"><Clock3 size={13}/>{pendingCheckpoint?"Self-paced checkpoint":nextLesson?.timeLabel??"Self-paced review"}<span className="dot-separator">·</span>No account or real money needed to read</span></div><JourneyIllustration/></section>
           <section className="panel today-card"><div className="section-row"><p className="eyebrow">YOUR LEARNING PACE</p><span className="sun-icon">☀</span></div><div className="today-progress"><ProgressRing percent={percent}/><div><strong>{completed.size} <span>/ {lessons.length}</span></strong><p>lessons completed</p></div></div><div className="progress-track"><span style={{width:`${percent}%`}}/></div><p className="today-description">{completed.size===0?"Your first lesson is a small step. A strong foundation starts with showing up.":`${passed.size} of ${modules.length} checkpoints passed. Keep choosing understanding over speed.`}</p><button className="text-button" onClick={()=>go("settings")}><Clock3 size={14}/>{data?.profile.dailyMinutes??15} minutes a day<ChevronRight size={14}/></button></section></div>
           <div className="stat-grid"><div className="stat-card"><span className="stat-icon sage"><BookOpen size={20}/></span><div><strong>{modules.length} chapters</strong><span>A clear path from the very basics</span></div></div><div className="stat-card"><span className="stat-icon peach"><RefreshCw size={20}/></span><div><strong>{due.length} {due.length===1?"idea":"ideas"} to revisit</strong><span>{due.length?"A little recall makes learning stick":"Reviews appear after you learn"}</span></div>{due.length>0&&<button className="icon-button" aria-label="Open due reviews" onClick={()=>go("review")}><ArrowRight size={18}/></button>}</div><div className="stat-card"><span className="stat-icon sand"><NotebookPen size={20}/></span><div><strong>{data?.notes.filter(n=>n.content.trim()).length??0} saved notes</strong><span>Your understanding, in your words</span></div></div></div>
           <div className="section-heading"><div><p className="eyebrow">THE ROAD AHEAD</p><h2>Your learning path</h2></div><button className="text-button" onClick={()=>go("course")}>Explore all lessons<ArrowRight size={15}/></button></div>
@@ -238,21 +336,21 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
           <div className="bottom-guide"><div className="guide-icon"><ShieldCheck size={23}/></div><div><strong>Learn the “why” before the “buy.”</strong><p>This is a learning space. No signals, profit promises, or real-money orders.</p></div><button className="text-button" onClick={()=>openResource("VERIFICATION_REPORT.md")}>How this course was checked<ArrowRight size={14}/></button></div>
         </>}
 
-        {graduateOpened&&<div hidden={view!=="graduate"}><GraduateCourse onResource={openResource}/></div>}
+        {graduateOpened&&<div hidden={view!=="graduate"}><GraduateCourse timezone={data?.profile.timezone??DEFAULT_STUDY_ZONE} onResource={openResource}/></div>}
 
         {view==="course"&&<>
           <div className="page-heading"><div><p className="eyebrow">YOUR BEGINNER JOURNEY</p><h1>The course, one idea at a time.</h1><p>{lessons.length} small lessons. {modules.length} checkpoints. A foundation you can explain.</p></div><div className="course-progress-label"><ProgressRing percent={percent} size={52}/><span>{completed.size} lessons<br/><strong>completed</strong></span></div></div>
           {search&&<div className="search-results-heading"><Search size={17}/><span>Lessons matching “{search}”</span><button className="text-button" onClick={()=>setSearch("")}>Clear search</button></div>}
           <div className="course-list">{modules.filter(m=>!search||m.lessons.some(l=>(l.title+" "+l.body).toLowerCase().includes(search.toLowerCase()))).map(module=>{
             const Icon=moduleIcons[(module.id-1)%moduleIcons.length];const count=module.lessons.filter(l=>completed.has(l.id)).length;const expanded=expandedModule===module.id||!!search;
-            return <section className={`chapter-panel panel ${expanded?"chapter-expanded":""}`} key={module.id}><button className="chapter-toggle" onClick={()=>setExpandedModule(expandedModule===module.id?0:module.id)} aria-expanded={expanded}><span className={`module-icon module-color-${module.id%4}`}><Icon size={23}/></span><span className="chapter-heading"><span className="eyebrow">CHAPTER {num(module.id)}<span className="chapter-count">{count}/{module.lessons.length} complete</span></span><strong>{module.title}</strong><span>{descriptionFor(module.id)}</span></span>{passed.has(module.id)?<CheckCircle2 size={22} className="positive"/>:<ChevronDown size={19} className={expanded?"rotate-up":""}/>}</button>{expanded&&<div className="chapter-lessons">{module.lessons.filter(l=>!search||(l.title+" "+l.body).toLowerCase().includes(search.toLowerCase())).map(l=><button className={`lesson-row ${completed.has(l.id)?"lesson-row-complete":""}`} key={l.id} onClick={()=>openLesson(l.id)}><span className="lesson-number">{completed.has(l.id)?<Check size={15}/>:num(l.id)}</span><span className="lesson-row-title">{l.title}</span><span className="lesson-time"><Clock3 size={12}/>{l.minutes} min</span><ChevronRight size={15}/></button>)}<div className="chapter-checkpoint"><div><FileCheck2 size={20}/><span><strong>Put it into your own words</strong><small>{passed.has(module.id)?"Checkpoint passed — revisit anytime":count===module.lessons.length?"Your chapter checkpoint is ready":"Complete these 8 lessons to open the checkpoint"}</small></span></div><button className="button button-small button-secondary" disabled={count<module.lessons.length||!data||!!busy} onClick={()=>startQuiz(module.id)}>{passed.has(module.id)?"Practice again":"Take checkpoint"}<ArrowRight size={13}/></button></div></div>}</section>;
+            return <section className={`chapter-panel panel ${expanded?"chapter-expanded":""}`} key={module.id}><button className="chapter-toggle" onClick={()=>setExpandedModule(expandedModule===module.id?0:module.id)} aria-expanded={expanded}><span className={`module-icon module-color-${module.id%4}`}><Icon size={23}/></span><span className="chapter-heading"><span className="eyebrow">CHAPTER {num(module.id)}<span className="chapter-count">{count}/{module.lessons.length} complete</span></span><strong>{module.title}</strong><span>{descriptionFor(module.id)}</span></span>{passed.has(module.id)?<CheckCircle2 size={22} className="positive"/>:<ChevronDown size={19} className={expanded?"rotate-up":""}/>}</button>{expanded&&<div className="chapter-lessons">{module.lessons.filter(l=>!search||(l.title+" "+l.body).toLowerCase().includes(search.toLowerCase())).map(l=><button className={`lesson-row ${completed.has(l.id)?"lesson-row-complete":""}`} key={l.id} onClick={()=>openLesson(l.id)}><span className="lesson-number">{completed.has(l.id)?<Check size={15}/>:num(l.id)}</span><span className="lesson-row-title">{l.title}</span><span className="lesson-time"><Clock3 size={12}/>{l.timeLabel}</span><ChevronRight size={15}/></button>)}<div className="chapter-checkpoint"><div><FileCheck2 size={20}/><span><strong>Put it into your own words</strong><small>{passed.has(module.id)?"Checkpoint passed — revisit anytime":count===module.lessons.length?"Your chapter checkpoint is ready":"Complete these 8 lessons to open the checkpoint"}</small></span></div><button className="button button-small button-secondary" disabled={count<module.lessons.length||!data||!!busy} onClick={()=>startQuiz(module.id)}>{passed.has(module.id)?"Practice again":"Take checkpoint"}<ArrowRight size={13}/></button></div></div>}</section>;
           })}</div>{search&&!modules.some(m=>m.lessons.some(l=>(l.title+" "+l.body).toLowerCase().includes(search.toLowerCase())))&&<Empty icon={Search} title="No lessons found" text="Try a term such as call, shares, or premium."/>}
         </>}
 
         {view==="lesson"&&<>
           <div className="reader-top"><button className="text-button" onClick={()=>{setExpandedModule(currentModule.id);go("course");}}><ArrowLeft size={15}/>All lessons</button><span>CHAPTER {num(currentModule.id)} <span className="dot-separator">·</span> {currentModule.title}</span></div>
           <div className="lesson-stepping" aria-label="Lessons in this chapter">{currentModule.lessons.map(l=><button key={l.id} aria-current={selectedId===l.id?"step":undefined} className={`${l.id===selectedId?"current ":""}${completed.has(l.id)?"done":""}`} onClick={()=>openLesson(l.id)} aria-label={`Lesson ${l.id}: ${l.title}`}>{completed.has(l.id)?<Check size={13}/>:num(l.id)}</button>)}<span>{currentModule.lessons.findIndex(l=>l.id===selectedId)+1} of 8</span></div>
-          <div className="reader-layout"><article className="lesson-article"><div className="lesson-heading"><p className="eyebrow">LESSON {num(currentLesson.id)}<span><Clock3 size={12}/>{currentLesson.minutes} MINUTES</span>{completed.has(currentLesson.id)&&<span className="positive"><CheckCircle2 size={12}/>COMPLETED</span>}</p><h1>{currentLesson.title}</h1><p>Take your time. Write an answer before revealing the solution.</p></div><details className="module-context"><summary>Chapter assumptions & study notes</summary><Markdown content={currentModule.introduction} onFileLink={fileLink} compact/></details><Markdown content={currentLesson.body} onFileLink={fileLink}/><div className="lesson-completion">{completed.has(currentLesson.id)?<><span className="completion-check"><CheckCircle2 size={22}/><span><strong>One more idea understood.</strong><small>Your completion is saved. A review will help it stay with you.</small></span></span>{currentLesson.id===currentModule.lessons.at(-1)?.id?<button className="button button-primary" disabled={!!busy||!data} onClick={()=>startQuiz(currentModule.id)}>Chapter checkpoint<ArrowRight size={16}/></button>:<button className="button button-primary" onClick={()=>openLesson(currentLesson.id+1)}>Next small lesson<ArrowRight size={16}/></button>}</>:<><label className="completion-confirm"><input type="checkbox" checked={lessonTried} onChange={e=>setLessonTried(e.target.checked)}/><span>I&apos;ve worked the example and tried the question in my own words.</span></label><button className="button button-primary" disabled={!lessonTried||!canComplete(currentLesson)||!!busy} onClick={completeLesson}>{busy==="complete"?<LoaderCircle size={16} className="spin"/>:<Check size={16}/>}Mark lesson complete</button>{!data?<p className="fine-print"><a href="/signin-with-chatgpt?return_to=%2F" target="_top">Sign in with ChatGPT</a> to save your progress.</p>:!canComplete(currentLesson)&&<p className="fine-print">You can preview this idea. Complete the previous lesson and earlier chapter checkpoints to record it in order.</p>}</>}</div><div className="reader-pagination"><button className="text-button" disabled={currentLesson.id===1} onClick={()=>openLesson(currentLesson.id-1)}><ChevronLeft size={15}/>Previous lesson</button><button className="text-button" disabled={currentLesson.id===lessons.at(-1)?.id} onClick={()=>openLesson(currentLesson.id+1)}>Preview next lesson<ChevronRight size={15}/></button></div></article><aside className="reader-aside">{renderNoteEditor(currentLesson.id)}<div className="reader-tip"><Sprout size={20}/><h3>A small habit that helps</h3><p>Close the lesson. Explain its one idea as if you were teaching a friend. If you get stuck, that&apos;s your next place to practice.</p></div></aside></div>
+          <div className="reader-layout"><article className="lesson-article"><div className="lesson-heading"><p className="eyebrow">LESSON {num(currentLesson.id)}<span><Clock3 size={12}/>{currentLesson.timeLabel}</span>{completed.has(currentLesson.id)&&<span className="positive"><CheckCircle2 size={12}/>COMPLETED</span>}</p><h1>{currentLesson.title}</h1><p>Take your time. Write an answer before revealing the solution.</p></div><details className="module-context"><summary>Chapter assumptions & study notes</summary><Markdown content={currentModule.introduction} onFileLink={fileLink} compact/></details><Markdown content={solutionSection?currentLesson.body.replace(solutionSection[0],""):currentLesson.body} onFileLink={fileLink}/>{currentLesson.id===63&&!loading&&(!!data||guest)&&<PracticalLedger solutionTitle={solutionSection?.[1]} solutionBody={solutionSection?.[2]} key={data?.user.id??data?.user.email??"guest"} expectedOwnerId={data?.user.id} timezone={data?.profile.timezone??DEFAULT_STUDY_ZONE} onChange={()=>{void refresh().catch(e=>showError(e,reloadLearning,"Reload learning record"));}}/>}<div className="lesson-completion">{completed.has(currentLesson.id)?<><span className="completion-check"><CheckCircle2 size={22}/><span><strong>{currentLesson.id===63?"Reading completed.":"One more idea understood."}</strong><small>{currentLesson.id===63?"Each case ledger has its own assessment record.":"Your completion is saved. A review will help it stay with you."}</small></span></span>{currentLesson.id===currentModule.lessons.at(-1)?.id?<button className="button button-primary" disabled={!!busy||!data} onClick={()=>startQuiz(currentModule.id)}>Chapter checkpoint<ArrowRight size={16}/></button>:<button className="button button-primary" onClick={()=>openLesson(currentLesson.id+1)}>Next small lesson<ArrowRight size={16}/></button>}</>:<><label className="completion-confirm"><input type="checkbox" checked={lessonTried} onChange={e=>setLessonTried(e.target.checked)}/><span>I&apos;ve worked the example and tried the question in my own words.</span></label><button className="button button-primary" disabled={!lessonTried||!canComplete(currentLesson)||!!busy} onClick={completeLesson}>{busy==="complete"?<LoaderCircle size={16} className="spin"/>:<Check size={16}/>}{currentLesson.id===63?"Mark reading complete":"Mark lesson complete"}</button>{!data?<p className="fine-print"><a href={signInHref} target="_top">Sign in with ChatGPT</a> to save your progress.</p>:!canComplete(currentLesson)&&<p className="fine-print">You can preview this idea. Complete the previous lesson and earlier chapter checkpoints to record it in order.</p>}</>}</div><div className="reader-pagination"><button className="text-button" disabled={currentLesson.id===1} onClick={()=>openLesson(currentLesson.id-1)}><ChevronLeft size={15}/>Previous lesson</button><button className="text-button" disabled={currentLesson.id===lessons.at(-1)?.id} onClick={()=>openLesson(currentLesson.id+1)}>Preview next lesson<ChevronRight size={15}/></button></div></article><aside className="reader-aside">{renderNoteEditor(currentLesson.id)}<div className="reader-tip"><Sprout size={20}/><h3>A small habit that helps</h3><p>Close the lesson. Explain its one idea as if you were teaching a friend. If you get stuck, that&apos;s your next place to practice.</p></div></aside></div>
         </>}
 
         {view==="checkpoint"&&<>
@@ -270,18 +368,19 @@ export default function CourseApp({initialName=""}:{initialName?:string}) {
         </>}
 
         {view==="notebook"&&<>
+          {practicalLink}
           <div className="page-heading"><div><p className="eyebrow">YOUR UNDERSTANDING, IN YOUR WORDS</p><h1>A notebook for your discoveries.</h1><p>Keep your explanations, first attempts, and questions together.</p></div>{data&&<a className="button button-secondary" href="/api/export?format=json" download><ArrowDownToLine size={16}/>Export my learning</a>}</div>
-          {(data?.notes.filter(n=>n.content.trim()).length??0)===0?<Empty icon={NotebookPen} title="Your notebook is a blank page." text="Every lesson has a place for your own words. Write an explanation, try the question, or save something you want to ask."><button className="button button-primary" onClick={()=>openLesson(nextLesson?.id??1)}>Open a lesson<ArrowRight size={15}/></button></Empty>:<div className="notebook-grid">{data?.notes.filter(n=>n.content.trim()).map(note=>{const lesson=lessons.find(l=>l.id===note.lessonId);return <section className="panel notebook-entry" key={note.lessonId}><div className="section-row"><p className="eyebrow">LESSON {num(note.lessonId)}</p><button className="text-button" onClick={()=>openLesson(note.lessonId)}>Open lesson<ArrowRight size={13}/></button></div><h2>{lesson?.title}</h2><p className="note-date">Saved {new Date(note.updatedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:data.profile.timezone})}</p><p className="saved-note-text">{note.content}</p></section>;})}</div>}
+          {(data?.notes.filter(n=>n.content.trim()).length??0)===0?<Empty icon={NotebookPen} title="Your notebook is a blank page." text="Every lesson has a place for your own words. Write an explanation, try the question, or save something you want to ask."><button className="button button-primary" onClick={()=>openLesson(nextLesson?.id??1)}>Open a lesson<ArrowRight size={15}/></button></Empty>:<div className="notebook-grid">{data?.notes.filter(n=>n.content.trim()).map(note=>{const lesson=lessons.find(l=>l.id===note.lessonId);return <section className="panel notebook-entry" key={note.lessonId}><div className="section-row"><p className="eyebrow">LESSON {num(note.lessonId)}</p><button className="text-button" onClick={()=>openLesson(note.lessonId)}>Open lesson<ArrowRight size={13}/></button></div><h2>{lesson?.title}</h2><p className="note-date">Saved {formatStudyTime(note.updatedAt,data.profile.timezone)}</p><p className="saved-note-text">{note.content}</p></section>;})}</div>}
         </>}
 
         {view==="practice"&&<><div className="page-heading"><div><p className="eyebrow">A PLACE TO ASK “WHAT IF?”</p><h1>See the idea take shape.</h1><p>Explore a simple payoff with imaginary numbers. Start after lesson 24.</p></div><span className="outlined-tag"><FlaskConical size={14}/>No real-money trading</span></div><PayoffLab/></>}
 
         {view==="resources"&&<>
-          {selectedResource?(()=>{const resource=library.find(r=>r.file===selectedResource);return <><button className="text-button back-resource" onClick={closeResource}><ArrowLeft size={15}/>Resource library</button>{resourceLoading?<div className="panel empty-state" role="status"><LoaderCircle size={24} className="spin"/><p>Opening your reference…</p></div>:resource?.body!==undefined?<article className="panel resource-article"><Markdown content={resource.body} onFileLink={fileLink}/></article>:<Empty icon={FileText} title="This resource is available in the course files" text="Open the source document to read the full reference."><a className="button button-secondary" href={`/api/resources?file=${encodeURIComponent(selectedResource)}&download=1`} target="_blank" rel="noreferrer">Open document<ExternalLink size={14}/></a></Empty>}</>;})():<><div className="page-heading"><div><p className="eyebrow">LOOK A LITTLE DEEPER</p><h1>Good sources. Clear explanations.</h1><p>Keep these references nearby. Read only what helps your current lesson.</p></div></div><div className="resource-feature panel"><span className="resource-feature-icon"><ShieldCheck size={31}/></span><div><p className="eyebrow">UNDERSTANDING YOU CAN CHECK</p><h2>Built on the mechanics, not the hype.</h2><p>Lessons draw on SEC, OCC/OIC, FINRA, and exchange materials. The source library and verification report show the evidence and the limits.</p></div><button className="button button-secondary" onClick={()=>openResource("SOURCES.md")}>Explore sources<ArrowRight size={15}/></button></div><label className="resource-search search-field"><Search size={17}/><span className="sr-only">Search resources</span><input placeholder="Search the library…" value={resourceSearch} onChange={e=>setResourceSearch(e.target.value)}/></label><div className="resource-grid">{library.filter(r=>(r.title+" "+r.file).toLowerCase().includes(resourceSearch.toLowerCase())).map((resource,i)=>{const Icon=/source|verification/i.test(resource.file)?ShieldCheck:/glossary/i.test(resource.file)?BookOpen:/workbook|math/i.test(resource.file)?NotebookPen:FileText;return <button className="panel resource-card" key={resource.file} onClick={()=>openResource(resource.file)}><span className={`module-icon module-color-${i%4}`}><Icon size={21}/></span><h3>{resource.title}</h3><span className="text-button">Open reference<ArrowRight size={14}/></span></button>;})}</div>{!library.some(r=>(r.title+" "+r.file).toLowerCase().includes(resourceSearch.toLowerCase()))&&<Empty icon={Search} title="No matching references" text="Try sources, glossary, risk, or math."/>}<section className="resource-download"><div><h3>Keep the teaching files with you</h3><p>Download the course, workbook, references, and Python labs for offline study.</p></div><a className="button button-secondary" href="/downloads/options-course.zip" download><ArrowDownToLine size={15}/>Download the course · ZIP</a></section><div className="primary-sources"><h3>Go straight to the primary source</h3><div><a href="https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-63" target="_blank" rel="noopener noreferrer">SEC · Options introduction<ExternalLink size={14}/></a><a href="https://www.optionseducation.org/" target="_blank" rel="noopener noreferrer">OCC / OIC · Options education<ExternalLink size={14}/></a><a href="https://www.finra.org/investors/insights/trading-options-understanding-assignment" target="_blank" rel="noopener noreferrer">FINRA · Exercise & assignment<ExternalLink size={14}/></a></div></div></>}
+          {selectedResource?(()=>{const resource=library.find(r=>r.file===selectedResource);return <><button className="text-button back-resource" onClick={()=>go("resources")}><ArrowLeft size={15}/>Resource library</button>{resourceLoading?<div className="panel empty-state" role="status"><LoaderCircle size={24} className="spin"/><p>Opening your reference…</p></div>:resource?.body!==undefined?<article className="panel resource-article"><Markdown content={resource.body} onFileLink={fileLink}/></article>:<Empty icon={FileText} title="This resource is available in the course files" text="Open the source document to read the full reference."><a className="button button-secondary" href={`/api/resources?file=${encodeURIComponent(selectedResource)}&download=1`} target="_blank" rel="noreferrer">Open document<ExternalLink size={14}/></a></Empty>}</>;})():<><div className="page-heading"><div><p className="eyebrow">LOOK A LITTLE DEEPER</p><h1>Good sources. Clear explanations.</h1><p>Keep these references nearby. Read only what helps your current lesson.</p></div></div><div className="resource-feature panel"><span className="resource-feature-icon"><ShieldCheck size={31}/></span><div><p className="eyebrow">UNDERSTANDING YOU CAN CHECK</p><h2>Built on the mechanics, not the hype.</h2><p>Lessons draw on SEC, OCC/OIC, FINRA, and exchange materials. The source library and verification report show the evidence and the limits.</p></div><button className="button button-secondary" onClick={()=>openResource("SOURCES.md")}>Explore sources<ArrowRight size={15}/></button></div><label className="resource-search search-field"><Search size={17}/><span className="sr-only">Search resources</span><input placeholder="Search the library…" value={resourceSearch} onChange={e=>setResourceSearch(e.target.value)}/></label><div className="resource-grid">{library.filter(r=>(r.title+" "+r.file).toLowerCase().includes(resourceSearch.toLowerCase())).map((resource,i)=>{const Icon=/source|verification/i.test(resource.file)?ShieldCheck:/glossary/i.test(resource.file)?BookOpen:/workbook|math/i.test(resource.file)?NotebookPen:FileText;return <button className="panel resource-card" key={resource.file} onClick={()=>openResource(resource.file)}><span className={`module-icon module-color-${i%4}`}><Icon size={21}/></span><h3>{resource.title}</h3><span className="text-button">Open reference<ArrowRight size={14}/></span></button>;})}</div>{!library.some(r=>(r.title+" "+r.file).toLowerCase().includes(resourceSearch.toLowerCase()))&&<Empty icon={Search} title="No matching references" text="Try sources, glossary, risk, or math."/>}<section className="resource-download"><div><h3>Keep the teaching files with you</h3><p>Download the course, workbook, references, and Python labs for offline study.</p></div><a className="button button-secondary" href="/downloads/options-course.zip" download><ArrowDownToLine size={15}/>Download the course · ZIP</a></section><div className="primary-sources"><h3>Go straight to the primary source</h3><div><a href="https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-63" target="_blank" rel="noopener noreferrer">SEC · Options introduction<ExternalLink size={14}/></a><a href="https://www.optionseducation.org/" target="_blank" rel="noopener noreferrer">OCC / OIC · Options education<ExternalLink size={14}/></a><a href="https://www.finra.org/investors/insights/trading-options-understanding-assignment" target="_blank" rel="noopener noreferrer">FINRA · Exercise & assignment<ExternalLink size={14}/></a></div></div></>}
         </>}
 
         {view==="settings"&&<>
-          <div className="page-heading"><div><p className="eyebrow">MAKE SPACE FOR LEARNING</p><h1>Your pace is the right pace.</h1><p>A small, repeatable habit is enough to get started.</p></div></div><div className="settings-layout"><section className="panel settings-panel"><h2>Your daily intention</h2><p>This is a study preference, not a deadline or a reminder schedule.</p><fieldset><legend>How much time would you like to set aside?</legend><div className="pace-options">{[5,10,15,20,30].map(value=><button type="button" className={dailyMinutes===value?"selected":""} key={value} onClick={()=>setDailyMinutes(value)} aria-pressed={dailyMinutes===value}><strong>{value}</strong><span>minutes</span></button>)}</div></fieldset><label htmlFor="timezone-setting">Your time zone</label><select id="timezone-setting" value={timezone} onChange={e=>setTimezone(e.target.value)}>{Array.from(new Set([timezone,"America/Phoenix","America/Los_Angeles","America/Denver","America/Chicago","America/New_York","Europe/London","Europe/Paris","Asia/Kolkata","Asia/Singapore","Australia/Sydney","UTC"])).map(zone=><option key={zone} value={zone}>{zone.replaceAll("_"," ")}</option>)}</select><p className="fine-print">Used to display dates in your learning record.</p><button className="button button-primary" disabled={!data||!!busy} onClick={async()=>{const ok=await mutate("settings","/api/profile",{dailyMinutes,timezone},"PUT");if(ok)setNotice({text:"Your learning preferences are saved.",kind:"success"});}}>{busy==="settings"?<LoaderCircle className="spin" size={16}/>:<Check size={16}/>}Save preferences</button>{!data&&<p className="fine-print"><a href="/signin-with-chatgpt?return_to=%2F" target="_top">Sign in</a> to save preferences and learning progress.</p>}</section><div><section className="panel account-panel"><span className="panel-icon"><LockKeyhole size={20}/></span><h2>Your learning belongs to you.</h2><p>Progress, notes, and checkpoint attempts are saved to your signed-in learning account.</p>{data?<><div className="account-details"><strong>{data.user.name||"Learner"}</strong><span>{data.user.email}</span></div><div className="export-links"><a href="/api/export?format=json" download><ArrowDownToLine size={15}/>Export full record · JSON</a><a href="/api/export?format=csv" download><ArrowDownToLine size={15}/>Export progress · CSV</a></div></>:<a className="button button-secondary" href="/signin-with-chatgpt?return_to=%2F" target="_top">Sign in with ChatGPT<ArrowRight size={15}/></a>}</section><div className="reader-tip"><Sprout size={21}/><h3>Taking longer is allowed.</h3><p>You can reread a lesson, repeat a question, or take a day off. The course moves forward when your understanding does.</p></div></div></div>
+          <div className="page-heading"><div><p className="eyebrow">MAKE SPACE FOR LEARNING</p><h1>Your pace is the right pace.</h1><p>A small, repeatable habit is enough to get started.</p></div></div><div className="settings-layout"><section className="panel settings-panel"><h2>Your daily intention</h2><p>This is a study preference, not a deadline or a reminder schedule.</p><fieldset><legend>How much time would you like to set aside?</legend><div className="pace-options">{[5,10,15,20,30].map(value=><button type="button" className={dailyMinutes===value?"selected":""} key={value} onClick={()=>setDailyMinutes(value)} aria-pressed={dailyMinutes===value}><strong>{value}</strong><span>minutes</span></button>)}</div></fieldset><label htmlFor="timezone-setting">Your time zone</label><select id="timezone-setting" value={timezone} onChange={e=>setTimezone(e.target.value)}>{Array.from(new Set([timezone,"America/Phoenix","America/Los_Angeles","America/Denver","America/Chicago","America/New_York","Europe/London","Europe/Paris","Asia/Kolkata","Asia/Singapore","Australia/Sydney","UTC"])).map(zone=><option key={zone} value={zone}>{zone.replaceAll("_"," ")}</option>)}</select><p className="fine-print">Used to display dates in your learning record.</p><button className="button button-primary" disabled={!data||!!busy} onClick={async()=>{const ok=await mutate("settings","/api/profile",{dailyMinutes,timezone},"PUT");if(ok)setNotice({text:"Your learning preferences are saved.",kind:"success"});}}>{busy==="settings"?<LoaderCircle className="spin" size={16}/>:<Check size={16}/>}Save preferences</button>{!data&&<p className="fine-print"><a href={signInHref} target="_top">Sign in</a> to save preferences and learning progress.</p>}</section><div><section className="panel account-panel"><span className="panel-icon"><LockKeyhole size={20}/></span><h2>Your learning belongs to you.</h2><p>Progress, notes, and checkpoint attempts are saved to your signed-in learning account.</p>{data?<><div className="account-details"><strong>{data.user.name||"Learner"}</strong><span>{data.user.email}</span></div><div className="export-links"><a href="/api/export/portfolio" download><ArrowDownToLine size={15}/>Download full learning portfolio · JSON</a><p className="fine-print">Includes your saved beginner work, advanced submissions, practice, reviews, capstone artifacts and pilot evidence. Records are indexed by section. Unsaved text stays on this device.</p><a href="/api/export?format=json" download><ArrowDownToLine size={15}/>Download beginner record · JSON</a><a href="/api/export?format=csv" download><ArrowDownToLine size={15}/>Download beginner progress · CSV</a></div></>:<a className="button button-secondary" href={signInHref} target="_top">Sign in with ChatGPT<ArrowRight size={15}/></a>}</section><div className="reader-tip"><Sprout size={21}/><h3>Taking longer is allowed.</h3><p>You can reread a lesson, repeat a question, or take a day off. The course moves forward when your understanding does.</p></div></div></div>
         </>}
         <footer className="app-footer"><span><span className="footer-mark">f.</span>First principles. Lasting understanding.</span><span>U.S. listed options · Education & simulation</span></footer>
       </main>

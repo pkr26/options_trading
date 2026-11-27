@@ -3,6 +3,7 @@ import { ApiError, failure, identity, json, readJsonBody, withoutUserId } from "
 import { graduatePractice, graduateSubmissions } from "@/db/schema";
 import { graduateModule, GRADUATE_VERSION } from "@/lib/graduate";
 import { graduateSubmissionInput } from "@/lib/graduate-validation";
+import { MEMO_BODY_BYTES } from "@/lib/memo-limits";
 
 export async function GET() {
   try {
@@ -17,8 +18,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const {user, db} = await identity(request);
-    const input = graduateSubmissionInput.parse(await readJsonBody(request));
+    const {user, db} = await identity(request, MEMO_BODY_BYTES);
+    const input = graduateSubmissionInput.parse(await readJsonBody(request, MEMO_BODY_BYTES));
     const teachingModule = graduateModule(input.moduleId);
     if (!teachingModule) throw new ApiError("Choose an available advanced module.");
     const ownerModule = and(eq(graduateSubmissions.userId, user.userId), eq(graduateSubmissions.moduleId, input.moduleId));

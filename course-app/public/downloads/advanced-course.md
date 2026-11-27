@@ -3503,7 +3503,7 @@ Stage: Research, portfolio policy and defense. Study allocation: Four-week study
 
 ## Begin with a decision
 
-Portfolio risk is determined by shared states, not the number of tickets. Adding local deltas is one view; repricing joint shocks and funding requirements is another. A policy must be checked at the portfolio level before adding a new position.
+Portfolio risk is determined by shared states, not the number of tickets. Group share-equivalent deltas by underlying. For a joint scenario, calculate each underlying’s dollar effect, then combine those effects and check the funding requirement. A policy must be checked at the portfolio level before adding a new position.
 
 **Learning outcome:** Aggregate correlated losses and reconcile both equity and funding under stress.
 
@@ -3519,7 +3519,7 @@ A position can be small by itself and large as part of a portfolio. Two option t
 
 Consider two hypothetical standard five-point-wide vertical credit spreads, each opened for a $1 credit. For an **intact**, standard, one-to-one spread with matching expiry and deliverable, theoretical maximum expiration loss per spread is `(5−1)×100 = $400`, before fees. Two could lose **$800** together. In a $20,000 practice account that is **4%** of equity. Under the sample risk policy (course-library reference: RISK_AND_OPERATIONS.md) of at most 1% aggregate modeled loss, the limit is $200, so even one such contract would fail the rule. Do not divide correlated risk by two merely because there are two tickets. Assignment, after-hours movement, fees, and forced liquidation can add funding and execution complications beyond an intact-spread diagram.
 
-The **Greeks** summarize local sensitivities. If the portfolio has net delta equivalent to **+40 shares**, a $5 downward move suggests about `40×(−$5)=−$200` from delta *at the starting point*. Gamma changes delta as price moves; vega changes value as IV moves; quotes may widen. A stress test therefore reprices all positions under several simultaneous changes. Include a down gap with IV rising, an up gap with IV falling, time passing, a dividend or earnings event, a liquidity squeeze, and one-leg assignment. Calculate both mark-to-market loss and the cash/share obligation. [Cboe describes price, volatility, time, and historical-event stress](https://www.cboe.com/solutions/options-analytics/portfolio-margin-analytics/stress-tests/). [OCC's STANS](https://www.theocc.com/risk-management/margin-methodology) is an institutional example of portfolio scenario thinking; its clearing-member margin method is not a personal safety threshold.
+The **Greeks** summarize local sensitivities. If two positions on stock ALFA have a combined delta of **+40 ALFA-share equivalents**, a $5 decline per ALFA share suggests about `40×(−$5)=−$200` from delta *at the starting point*. Gamma changes delta as price moves; vega changes value as IV moves; quotes may widen. A stress test therefore reprices all positions under several simultaneous changes. Include a down gap with IV rising, an up gap with IV falling, time passing, a dividend or earnings event, a liquidity squeeze, and one-leg assignment. Calculate both mark-to-market loss and the cash/share obligation. [Cboe describes price, volatility, time, and historical-event stress](https://www.cboe.com/solutions/options-analytics/portfolio-margin-analytics/stress-tests/). [OCC's STANS](https://www.theocc.com/risk-management/margin-methodology) is an institutional example of portfolio scenario thinking; its clearing-member margin method is not a personal safety threshold.
 
 A conservative risk limit cannot make a bad strategy good, but it can prevent a learning account from depending on one event. Set limits in cash terms and check the **smallest contract**. If one contract exceeds the limit, the valid action is to stay in simulation. Do not invent a higher limit to fit the trade. Record decisions *not* to trade, because restraint is part of the process you are auditing.
 
@@ -3561,28 +3561,32 @@ Use the original module practice below as the mathematical/mechanical foundation
 
 ### Case: Two small tickets, one large shock
 
-**Fictional teaching case.** A fictional $20,000 portfolio contains two matching five-point credit spreads opened for $1 each. Both depend on the same underlying and expiry. The manager describes them as diversified because they were opened on different days.
+**Fictional teaching case.** A fictional $20,000 portfolio contains two matching five-point credit spreads opened for $1 each. Both depend on stock ALFA and the same expiry. The manager describes them as diversified because they were opened on different days.
 
-Each standard one-to-one spread has a $100 multiplier and matching deliverables. Aggregate modeled-loss policy is $200. For a separate local sensitivity snapshot the portfolio delta is +40 share equivalents. Assume no other exposures for the first pass.
+Each spread has one short and one long standard ALFA put with matching expiration. Each contract has a multiplier of 100 and physically settles into 100 ALFA shares. Ignore fees. The aggregate modeled-loss limit is $200. Together the two spreads currently have delta +40 ALFA-share equivalents.
+
+Separately, a proposed two-stock portfolio has delta +40 ALFA-share equivalents and −10 BRAVO-share equivalents. A manager asks for its dollar response to a 1% rise in a broad market index. The memo includes neither stock’s spot price nor a relationship between either stock and the index.
 
 ### Initial decision
 
-Compute intact-spread expiration loss for each and together, the percentage of equity, and the delta-only estimate for a $5 decline. Explain why those are different risk statements.
+Compute each spread’s intact expiration loss, the combined loss as a percentage of equity, and the initial delta-only P&L if ALFA falls $5 per share. For the separate two-stock proposal, write whether the index scenario determines its dollar P&L. Name the missing risk-factor inputs and their units, and explain how you would use them.
 
 ### New information — commit your first decision before reading
 
-One short put is assigned while its long put remains open. The short strike is $50. State the gross cash/share transaction and add a separate funding line rather than subtracting only a $400 max-loss number.
+One short ALFA put with a $50 strike is assigned while its long put remains open. Identify the gross cash and share transaction. In the separate two-stock proposal, a new joint scenario specifies that ALFA falls $2 per ALFA share and BRAVO rises $3 per BRAVO share. Holding initial deltas fixed, give each stock’s dollar contribution and the combined estimated P&L before costs.
 
 ### Defense
 
-- What is the strongest reason to disagree with your recommendation in 'Two small tickets, one large shock'?
+- The manager adds +40 ALFA-share equivalents and −10 BRAVO-share equivalents and calls the portfolio “long 30 shares of the index.” What risk factor, price changes and units would support an index sensitivity?
 - Which supplied fact or assumption most affects your conclusion, and how would a change alter it?
 - Reproduce one cash-flow or numerical relationship without the worked answer.
 - What would this exercise permit you to conclude, and what evidence remains unavailable?
 
 ### Debrief — attempt the case first
 
-Each spread can lose ($5−$1)×100=$400 before fees; two total $800 or 4% of equity, beyond the $200 policy. The local delta estimate is 40×(−$5)=−$200, not a bound on a nonlinear gap. Different entry dates do not diversify an identical terminal event. Assignment buys 100 shares for $5,000 while the long put remains; that gross funding transaction belongs alongside the risk calculation. The supplied data are not sufficient to calculate every interim mark or broker margin requirement.
+Each spread can lose ($5 − $1) × 100 = $400 before fees. Together they can lose $800, or 4% of the $20,000 portfolio, exceeding the $200 limit. For an ALFA decline of $5 per share, the two spreads’ current delta implies 40 × (−$5) = −$200 of local P&L. Their different entry dates leave both exposed to the same expiration outcome. Assignment buys 100 ALFA shares for $5,000 and leaves the long put open. The account needs a separate funding check.
+
+For the two-stock proposal, the index move alone leaves each stock’s move unknown. A valid answer specifies a dollar move per ALFA share and per BRAVO share, or supplies starting prices in dollars per share and a modeled percentage move in each stock for each 1% index move. State the assumptions behind that mapping. With the update’s explicit stock shocks, ALFA contributes +40 × (−$2) = −$80 and BRAVO contributes −10 × (+$3) = −$30. The combined first-order estimate is −$110 before costs. Changing sensitivities, IV or liquidity would require more information.
 
 ### Weak — unsupported submission
 
@@ -3590,33 +3594,33 @@ Two tickets halve the risk, and net delta bounds the loss. This answer misses a 
 
 ### Adequate — calculation established submission
 
-Each spread can lose ($5−$1)×100=$400 before fees; two total $800 or 4% of equity, beyond the $200 policy. The local delta estimate is 40×(−$5)=−$200, not a bound on a nonlinear gap. Different entry dates do not diversify an identical terminal event. Assignment buys 100 shares for $5,000 while the long put remains; that gross funding transaction belongs alongside the risk calculation. The supplied data are not sufficient to calculate every interim mark or broker margin requirement. The calculation addresses the central fact, but full credit also requires a justified alternative, uncertainty and an explicit response to the update.
+The two spreads can lose $800, or 4% of equity. The ALFA assignment uses $5,000 and leaves the long put open. In the separate two-stock scenario, ALFA contributes −$80 and BRAVO contributes −$30, giving −$110. This answer still needs to explain which inputs were missing from the manager’s original index scenario and defend an action under the $200 limit.
 
 ### Excellent — defended and qualified submission
 
-The two spreads can jointly lose $800 before fees, breach policy and require a separate $5,000 assignment purchase in the stated event. I combine joint repricing with funding and uncertainty rather than relying on delta alone.
+I would decline further exposure under the $200 limit. Even one $400 spread exceeds it. I would check the funding available for the $5,000 ALFA share purchase and value the surviving long put separately. For the two-stock proposal, +40 ALFA-share equivalents describe sensitivity to ALFA, and −10 BRAVO-share equivalents describe sensitivity to BRAVO. A 1% index rise leaves each stock’s dollar move unspecified. I would request per-name shocks in dollars per share, or percentage responses to the index and starting stock prices. Under the supplied −$2 and +$3 stock moves, the estimated contributions are −$80 and −$30, for −$110 before costs. I would reprice both positions if the size of the shocks makes frozen deltas unreliable.
 
 ### Rubric
 
-- **Contract, units and calculation:** Every supplied amount and unit is reconciled; a reader can reproduce the case arithmetic, and missing quantities remain explicitly unknown.
+- **Contract, units and calculation:** Names the underlying for each share-equivalent delta and the units for every stock shock. Computes dollar contributions before aggregation and reconciles the $5,000 assignment cash separately.
 - **Objective and alternatives:** The recommendation serves this outcome: Aggregate correlated losses and reconcile both equity and funding under stress. It compares the strongest relevant alternative rather than selecting a familiar label.
-- **Risk and evidence:** The memo identifies the case-specific limiting assumption, distinguishes known facts from modeled quantities, and explains a plausible adverse outcome.
+- **Risk and evidence:** Identifies the missing per-stock moves under the 1% index shock, or supplies a justified stock-to-index mapping and the prices needed to convert percentage changes to dollars per share. Explains the limits of a local estimate.
 - **Revision and communication:** The initial answer is preserved; the update produces an explained revision or defended continuation, with a concise response to a reviewer challenge.
 
 ### Assignment
 
-Prepare and defend 'Two small tickets, one large shock'. Compute intact-spread expiration loss for each and together, the percentage of equity, and the delta-only estimate for a $5 decline. Explain why those are different risk statements.
+Prepare and defend “Two small tickets, one large shock.” Compute each spread’s intact expiration loss, the combined loss as a percentage of equity, and the initial delta-only P&L if ALFA falls $5 per share. For the separate two-stock proposal, write whether the index scenario determines its dollar P&L. Name the missing risk-factor inputs and their units, and explain how you would use them.
 
 - Dated initial recommendation written before the update.
-- Reproducible calculation or account/evidence reconciliation with units and assumptions.
-- Comparison with at least one relevant alternative and one reason your choice can disappoint.
+- A signed ledger for the original spreads and the separate two-stock scenario. Name each underlying, state delta and shock units, and show each dollar P&L contribution.
+- A written explanation of which risk-factor inputs are missing from the 1% index scenario, what units they need, and how they would allow a local dollar estimate. Defend an alternative under the $200 risk limit.
 - Preserved revision responding to the staged update and reviewer questions.
 - Fresh transfer solution, later retest record and a statement of assistance used.
 
 ### Later transfer questions
 
 - Create eight named joint shocks covering price, IV, time, liquidity and assignment. Identify which require repricing, which require a cash ledger and which remain unquantified.
-- Teach the central distinction of 'Two small tickets, one large shock' to a nontechnical committee member in ninety seconds.
+- Given only signed share-equivalent deltas for two different stocks, explain what additional information a specified index move needs to produce estimated dollar P&L. Give the units of each input.
 - What was your first misconception, what evidence corrected it, and can you explain the correction without reopening the debrief?
 
 ### Primary references

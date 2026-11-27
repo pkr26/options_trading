@@ -92,6 +92,10 @@ try {
   const note = "A share is a small ownership piece. I tried the example.";
   await noteInput.click();
   await noteInput.pressSequentially(note, {delay: 12});
+  await page.reload();
+  await expect(noteInput).toHaveValue(note);
+  assert.equal(new URL(page.url()).hash,"#lesson/1");
+  await noteInput.focus();
   await expect(noteInput).toBeFocused();
   await expect(noteInput).toHaveValue(note);
   const noteSaved = page.waitForResponse(response => response.url().endsWith("/api/notes") && response.request().method() === "PUT");
@@ -115,6 +119,7 @@ try {
 
   for (let lessonId = 2; lessonId <= 8; lessonId++) await api("/api/progress", {lessonId, action: "complete"});
   await page.reload();
+  await navigation("My learning");
   await page.getByRole("button", {name: "Take your checkpoint", exact: true}).click();
   for (const question of buildQuiz(1, 0)) {
     await page.locator(`input[name="${question.id}"][value="${(question.correctIndex + 1) % 4}"]`).check();
@@ -169,16 +174,26 @@ try {
   await page.getByRole("button", {name: "Save preferences", exact: true}).click();
   await expect(page.getByRole("status")).toContainText("Your learning preferences are saved");
   assert.equal((await api("/api/learning")).profile.dailyMinutes, 10);
+  const fullLink=page.getByRole("link",{name:"Download full learning portfolio · JSON"});
+  await expect(fullLink).toHaveAttribute("href","/api/export/portfolio");
+  const [portfolio]=await Promise.all([page.waitForEvent("download"),fullLink.click()]);
+  assert.match(portfolio.suggestedFilename(),/portfolio.*\.json$/i);
+  const pieces=[];
+  for await(const piece of await portfolio.createReadStream())pieces.push(piece);
+  const downloaded=JSON.parse(Buffer.concat(pieces).toString("utf8"));
+  assert.ok(downloaded.index && JSON.stringify(downloaded).includes(note),"Portfolio includes an index and the learner's actual saved note");
+  await expect(page.getByRole("link",{name:"Download beginner progress · CSV"})).toHaveAttribute("href","/api/export?format=csv");
   checks++;
 
   await page.setViewportSize({width: 390, height: 844});
-  await page.reload();
+  await page.goto(base.href);
   await expect(page.getByRole("heading", {name: "Welcome, Seedy."})).toBeVisible();
   await noHorizontalOverflow("Mobile dashboard");
   await screenshot("dashboard-mobile");
   await page.getByRole("button", {name: "Open navigation", exact: true}).click();
-  await expect(page.getByRole("button", {name: "Open navigation", exact: true})).toHaveAttribute("aria-expanded", "true");
-  await page.getByRole("button", {name: "The course", exact: true}).click();
+  const mobileDialog = page.getByRole("dialog", {name: "Main navigation", exact: true});
+  await expect(mobileDialog).toBeVisible();
+  await mobileDialog.getByRole("button", {name: "The course", exact: true}).click();
   await expect(page.getByRole("button", {name: "Open navigation", exact: true})).toHaveAttribute("aria-expanded", "false");
   await noHorizontalOverflow("Mobile course");
   await screenshot("course-mobile");

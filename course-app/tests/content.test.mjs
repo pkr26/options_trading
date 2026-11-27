@@ -22,6 +22,19 @@ test('the imported course has 64 ordered lessons in eight complete modules',()=>
   }
 });
 
+test('lesson durations preserve authored ranges and the total time across all four capstone cases',()=>{
+  const lessons=modules.flatMap(module=>module.lessons);
+  const usualTime=readFileSync(resolve(root,'beginner/REVIEW_PLAN.md'),'utf8').match(/allow roughly (\d+[–-]\d+ minutes) to read/i)[1];
+  for(const lesson of lessons) {
+    const stated=lesson.body.match(/^\*\*Time: ([^.\n]+)\./m)?.[1]??usualTime;
+    assert.equal(lesson.timeLabel,stated,`Lesson ${lesson.id} duration`);
+    if(lesson.id!==63) assert.equal(lesson.minutes,Number(stated.match(/(\d+) minutes/)[1]));
+  }
+  const capstone=lessons.find(lesson=>lesson.id===63);
+  assert.equal(capstone.timeLabel,'5–10 minutes per case, on four separate days');
+  assert.equal(capstone.minutes,40);
+});
+
 test('every lesson preserves teaching and a folded answer without absorbing later sections',()=>{
   for(const lesson of modules.flatMap(m=>m.lessons)) {
     assert.match(lesson.body,/worked (?:example|warm-up)/i,`Lesson ${lesson.id}: worked example`);

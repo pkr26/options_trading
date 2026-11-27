@@ -1,6 +1,7 @@
 import curriculum from "../content/graduate.json" with { type: "json" };
 import type { GraduateAnswer, GraduateModule } from "./graduate-types.ts";
 import type { WritingCriterion, WritingFeedback } from "./teaching-types.ts";
+import { MEMO_FIELD_LIMIT, memoLength } from "./memo-limits.ts";
 
 const modules = curriculum as GraduateModule[];
 type Profile = { working: string; decision: string; limitation: string; followup: string; topic: RegExp };
@@ -36,7 +37,10 @@ const profiles: Record<number, Profile> = {
 function sentences(text: string): string[] {
   return text.split(/(?<=[.!?;])\s+|\n+/).map(value => value.trim()).filter(Boolean);
 }
-const excerpt = (text: string) => text.length > 420 ? `${text.slice(0, 417)}…` : text;
+const excerpt = (text: string) => {
+  const points = Array.from(text);
+  return points.length > 420 ? `${points.slice(0, 417).join("")}…` : text;
+};
 const hasNumber = (text: string) => /\d/.test(text);
 const hasUnit = (text: string) => /\$|dollars?|shares?|contracts?|percent|points?|days?|years?|observations?|rows?|sample|variance|SE\b|delta|vega|cash|equity|return|probability/i.test(text);
 const hasWorking = (text: string) => /[=×÷*]|\b(?:minus|less|subtract|multiply|divid|sum|add|round|equals?|net|remaining|denominator|reconcil|hand.check|rerun|unit.test)/i.test(text);
@@ -109,7 +113,10 @@ export function evaluateWriting(moduleId: number, answers: GraduateAnswer, submi
   const selected = modules.find(item => item.id === moduleId);
   let profile = profiles[moduleId];
   if (!selected || !profile) throw new RangeError("Choose an advanced module from 1 to 26.");
-  for (const field of ["recommendation", "analysis", "risks", "revision", "reflection"] as const) if (typeof answers?.[field] !== "string" || answers[field].length > 6000) throw new TypeError("Supply the saved case response fields within their limits.");
+  for (const field of ["recommendation", "analysis", "risks", "revision", "reflection"] as const) {
+    const text = answers?.[field];
+    if (typeof text !== "string" || memoLength(text) > MEMO_FIELD_LIMIT) throw new TypeError("Supply the saved case response fields within their limits.");
+  }
   if (moduleId === 10 && !answers.revision.trim()) profile = { ...profile, limitation: "State which cash constraints are known at the initial decision; preserve the first memo before opening the staged new information.", followup: "Which alternative can you defend from the currently available packet, and what new information would cause you to revise it?" };
   const createdAt = now ?? new Date().toISOString();
   if (!Number.isFinite(Date.parse(createdAt))) throw new RangeError("Use a valid feedback date.");

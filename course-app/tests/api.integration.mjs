@@ -102,12 +102,45 @@ try {
   for (const stream of [false, true]) {
     status(await request("/api/notes", {method: "PUT", stream, body: {lessonId: 0, content: "valid", ignored: "x".repeat(100000)}}), 413, `Measured body limit (${stream ? "streamed" : "fixed-length"})`);
   }
-  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "学".repeat(10000)}}), 200, "10,000-code-unit Unicode note");
-  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "\u0000".repeat(10000)}}), 200, "10,000-code-unit JSON-escaped note");
+  const saveNote = (content, expectedRevision) => request("/api/notes", {
+    method: "PUT", body: {lessonId: 1, content, expectedRevision},
+  });
+  const missing = await saveNote("requires a prior revision", 1);
+  status(missing, 409, "Cannot update a missing note or read its peer's note");
+  assert.equal(missing.data.note, null);
+  status(await saveNote("bad revision", -1), 400, "Invalid note revision");
+  const unicode = "学".repeat(10000);
+  const created = await saveNote(unicode);
+  status(created, 200, "Legacy create of a 10,000-code-unit Unicode note");
+  assert.equal(created.data.revision, 1);
+  for (const expectedRevision of [0, 1, undefined]) {
+    const retry = await saveNote(unicode, expectedRevision);
+    status(retry, 200, "Same note content is idempotent");
+    assert.deepEqual(retry.data, created.data, "Retries preserve both revision and timestamp");
+  }
+  for (const expectedRevision of [0, undefined]) {
+    const conflict = await saveNote("would overwrite without a revision", expectedRevision);
+    status(conflict, 409, "Outdated creation or legacy overwrite rejected");
+    assert.deepEqual(conflict.data.note, {lessonId: 1, content: unicode, revision: 1, updatedAt: created.data.updatedAt});
+  }
+  const escaped = await saveNote("\u0000".repeat(10000), 1);
+  status(escaped, 200, "10,000-code-unit JSON-escaped note update");
+  assert.equal(escaped.data.revision, 2);
+
+  const edits = ["First tab's calculation", "Second tab's calculation"];
+  const race = await Promise.all(edits.map(content => saveNote(content, 2)));
+  assert.deepEqual(race.map(result => result.response.status).sort(), [200, 409]);
+  const winner = race.findIndex(result => result.response.status === 200);
+  assert.equal(race[winner].data.revision, 3);
+  assert.deepEqual(race[1 - winner].data.note, {
+    lessonId: 1, content: edits[winner], revision: 3, updatedAt: race[winner].data.updatedAt,
+  }, "Parallel editors see the saved winner and can reconcile their own draft");
 
   const note = '=SUM(A1:A2), "paper only"\nKeep the losing case.';
-  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: "first note"}}), 200, "Create own note");
-  status(await request("/api/notes", {method: "PUT", body: {lessonId: 1, content: note}}), 200, "Update own note");
+  const sameEdits = await Promise.all([saveNote(note, 3), saveNote(note, 3)]);
+  for (const edit of sameEdits) status(edit, 200, "Concurrent identical revisions converge");
+  assert.deepEqual(sameEdits[0].data, sameEdits[1].data);
+  assert.equal(sameEdits[0].data.revision, 4);
   status(await request("/api/profile", {method: "PUT", body: {dailyMinutes: 10, timezone: "America/Phoenix"}}), 200, "Persist profile");
   for (let lessonId = 1; lessonId <= 8; lessonId++) {
     status(await request("/api/progress", {method: "POST", body: {lessonId, action: "complete"}}), 200, `Complete lesson ${lessonId}`);
@@ -116,6 +149,7 @@ try {
   assert.equal(state.data.progress.length, 8);
   assert.equal(state.data.notes.length, 1);
   assert.equal(state.data.notes[0].content, note);
+  assert.equal(state.data.notes[0].revision, 4);
   assert.equal(state.data.profile.dailyMinutes, 10);
   const completedAt = state.data.progress.find(row => row.lessonId === 8).completedAt;
   status(await request("/api/progress", {method: "POST", body: {lessonId: 8, action: "complete"}}), 200, "Completion is idempotent");

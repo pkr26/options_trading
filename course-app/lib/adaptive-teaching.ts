@@ -1,5 +1,6 @@
 import curriculum from "../content/graduate.json" with { type: "json" };
 import { gradeGraduatePractice, makeGraduatePractice } from "./graduate-practice.ts";
+import { makeGraduatePractice as legacyGraduatePractice } from "./graduate-practice-2026-11-14.ts";
 import type { CompetencyId, GraduateModule, GraduatePracticeFeedback } from "./graduate-types.ts";
 import type { TeachingContext, TutorPlan, TutorRecommendation, TutorSession, TutorTransitionInput } from "./teaching-types.ts";
 
@@ -54,7 +55,7 @@ export function buildTutorPlan(context: TeachingContext, now?: string): TutorPla
     for (const interval of [30, 7]) {
       const due = Date.parse(first.createdAt) + interval * day;
       if (current >= due && !rows.some(item => Date.parse(item.createdAt) >= due)) {
-        add({ moduleId, skill: moduleFor(moduleId).competencies[0], priority: 70 + (moduleFor(moduleId).competencies.includes("contracts") ? 8 : 0), action: "retain", reason: `A ${interval}-day check is due from the first saved numerical set (${first.createdAt.slice(0, 10)}). Try a changed case without the original solution, and keep the new result separately.` });
+        add({ moduleId, skill: moduleFor(moduleId).competencies[0], priority: 70 + (moduleFor(moduleId).competencies.includes("contracts") ? 8 : 0), action: "retain", evidenceAt:first.createdAt, reason: `A ${interval}-day check is due from the first saved numerical set. Try a changed case without the original solution, and keep the new result separately.` });
         break;
       }
     }
@@ -85,10 +86,10 @@ export function buildTutorPlan(context: TeachingContext, now?: string): TutorPla
 function questionKey(session: Pick<TutorSession, "moduleId" | "sequence" | "questionIndex">, answer: number): GraduatePracticeFeedback {
   const questions = makeGraduatePractice(session.moduleId, session.sequence);
   const answers = Object.fromEntries(questions.map((question, index) => [question.id, index === session.questionIndex ? answer : 0]));
-  return gradeGraduatePractice(session.moduleId, session.sequence, answers)[session.questionIndex];
+  return gradeGraduatePractice(session.moduleId, session.sequence, answers, "standalone")[session.questionIndex];
 }
 function currentQuestion(session: Pick<TutorSession, "moduleId" | "sequence" | "questionIndex">) {
-  return makeGraduatePractice(session.moduleId, session.sequence)[session.questionIndex];
+  return makeGraduatePractice(session.moduleId, session.sequence, "standalone")[session.questionIndex];
 }
 function validateSession(session: TutorSession) {
   moduleFor(session.moduleId);
@@ -105,7 +106,7 @@ export function startTutorSession(moduleId: number, sequence: number, id: string
   const createdAt = timestamp(now);
   moduleFor(moduleId);
   if (typeof id !== "string" || !id.trim() || id.length > 200) throw new TypeError("Supply a tutor session identifier.");
-  const question = makeGraduatePractice(moduleId, sequence)[0];
+  const question = makeGraduatePractice(moduleId, sequence, "standalone")[0];
   return { id, moduleId, sequence, questionIndex: 0, revision: 1, phase: "question", hintLevel: 0, question, turns: [], teaching: teaching[question.skill].principle, nextStep: "Answer this one question before revealing help. Explain the units in your notes; your first numeric answer will be preserved.", createdAt };
 }
 
@@ -126,7 +127,24 @@ function transfer(session: TutorSession, teachingText: string): TutorSession {
   return { ...next, question: currentQuestion(next), teaching: teachingText, nextStep: "Apply the correction to this changed case without a hint. This transfer attempt is recorded separately from the assisted correction." };
 }
 
+export function presentTutorSession(session: TutorSession): TutorSession {
+  if (!session.question) return session;
+  const current = currentQuestion(session);
+  if (JSON.stringify(session.question) === JSON.stringify(current)) return session;
+  const previous = legacyGraduatePractice(session.moduleId, session.sequence)[session.questionIndex];
+  if (JSON.stringify(session.question) !== JSON.stringify(previous)) return session;
+  const updated = { ...session, question: current,
+    nextStep: "This question has been updated. Use the displayed inputs to calculate your answer." };
+  validateSession(updated);
+  return updated;
+}
+
 export function advanceTutorSession(session: TutorSession, input: TutorTransitionInput, now?: string): TutorSession {
+  const presented = presentTutorSession(session);
+  if (presented !== session && input.questionPrompt !== presented.question?.prompt) {
+    return { ...presented, revision: session.revision + 1 };
+  }
+  session = presented;
   validateSession(session);
   const at = timestamp(now);
   if (session.phase === "complete") throw new RangeError("This tutor session is complete. Start a new session for another check.");

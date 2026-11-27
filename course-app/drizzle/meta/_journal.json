@@ -29,6 +29,13 @@
       "when": 1794664848530,
       "tag": "0003_workable_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1795787173005,
+      "tag": "0004_note_revisions",
+      "breakpoints": true
     }
   ]
 }

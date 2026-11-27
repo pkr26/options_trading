@@ -27,7 +27,7 @@ export async function POST(request:Request){
   const current=latest.payload as TutorSession;
   if(current.turns.length>=200)throw new ApiError("This session has reached its saved-turn limit. Start a new session; this history is retained.",409);
   if(current.phase==="complete")throw new ApiError("This session is complete. Start a new teaching session.",409);
-  const next=advanceTutorSession(current,{action:input.action,...(input.action==="answer"?{answer:input.answer}:{})});
+  const next=advanceTutorSession(current,{action:input.action,questionPrompt:input.questionPrompt,...(input.action==="answer"?{answer:input.answer}:{})});
   next.revision=latest.revision+1;
   await appendTeachingEvent(db,user.userId,"tutor",input.sessionId,latest.revision,next);
   return json({session:next},201);

@@ -12,7 +12,7 @@ Advanced records use separate user-scoped D1 tables. Every save appends an immut
 
 The laboratories cover equal-budget portfolio comparisons, European theoretical prices and sensitivities, a short-leg assignment ledger and a supplied partial-fill/cancellation episode. Inputs and episodes are fictional teaching assumptions. Model prices, local sensitivities, expiration values and supplied fills have distinct meanings. All labs provide readable tables and explanations.
 
-The canonical advanced teaching source is `content/graduate.json`. Source changes require incrementing `GRADUATE_VERSION` in `lib/graduate.ts`; changes to question interpretation or key logic also require incrementing `GRADUATE_QUESTION_VERSION`. Existing records preserve their prior versions. `content:import` renders the full advanced Markdown download and inserts it into the library and offline ZIP. The ordinary source freshness check detects stale rendered copies.
+The canonical advanced teaching source is `content/graduate.json`. Source changes require incrementing `GRADUATE_VERSION` in `lib/graduate.ts`; changes to question interpretation or keys require a distinct question release and issued item IDs for the affected modules. The November 14 bank is retained for in-flight attempts and frozen pilot enrollments. Existing records preserve their prior versions. `content:import` renders the full advanced Markdown download and inserts it into the library and offline ZIP. The ordinary source freshness check detects stale rendered copies.
 
 Advanced API contracts:
 
@@ -53,7 +53,7 @@ The additive `drizzle/0003_workable_whirlwind.sql` migration creates owner-scope
 
 Vinext implements the Next.js API surface on Vite. It is not the Next.js production runtime. Cloudflare documents it for full-stack Workers applications: [official framework guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/). Versions are pinned by package-lock.json.
 
-All learning records are stored in D1, not browser storage. Local previews and the hosted app use separate databases. User keys come from trusted platform identity, and each read and write filters by that user. Notes are rendered as text; course Markdown does not enable raw HTML. Mutation requests validate origin, exact JSON content type, and a measured 64 KiB streaming body limit, including requests without Content-Length. Notes accept up to 10,000 JavaScript string code units, including Unicode and JSON-escaped controls within that request budget.
+Signed-in learning records are stored in D1. Unsubmitted lesson-note drafts are also retained in the current tab’s session storage, separately for guests and each signed-in account. A refresh or sign-in return can recover a draft. Explicit note saves use a revision check and offer conflict resolution. Local previews and the hosted app use separate databases. User keys come from trusted platform identity, and each read and write filters by that user. Notes are rendered as text; course Markdown does not enable raw HTML. Mutation requests validate origin and JSON content type. The streaming reader enforces 64 KiB by default and 384 KiB for advanced memo saves, including requests without Content-Length. Each of the five memo fields accepts up to 6,000 Unicode code points, including fully JSON-escaped supplementary characters. Initial submissions require 20 trimmed Unicode code points each for the recommendation, analysis and risks. Notes accept up to 10,000 JavaScript string code units, including Unicode and JSON-escaped controls within that request budget.
 
 The server calculates quiz scores, checks completion order and module prerequisites, and stores attempts. A unique per-user/module attempt sequence atomically accepts each issued quiz revision once; stale or concurrent duplicate submissions receive 409. New attempts retain selected answers, graded feedback, and course/question versions in learning records and exports. Older attempts keep their original scores, with unavailable historical answer evidence left empty. The two quiz forms alternate; once seen, they are review practice rather than unseen assessment. Recall updates use a separate revision check so two tabs cannot overwrite an acknowledged review.
 
@@ -69,13 +69,14 @@ npm test
 npm run build
 ```
 
-The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs all four migrations. Apply only the migrations not already present in an existing local database:
+The tracked hosting manifest declares the DB binding. Apply pending local schema migrations in filename order once per local database. A fresh database needs every migration listed below. After building, `node tests/health.integration.mjs` exercises the release Worker against a separate temporary D1 database through every migration.
 
 ```sh
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_loving_thanos.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_modern_firestar.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_regular_karen_page.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_workable_whirlwind.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_note_revisions.sql
 npm run dev -- --port 5173
 ```
 
@@ -93,9 +94,10 @@ Builds and local preview require network access when dependencies are not cached
 | PUT /api/profile | Save daily study minutes and an IANA timezone |
 | GET /api/quiz?moduleId=1 | Get the next checkpoint form and revision after completing its lessons |
 | POST /api/quiz | Validate five exact answer keys and the issued revision, grade and atomically persist one attempt |
-| GET /api/export | Download the current user's learning record as JSON |
+| GET /api/export/portfolio | Download one indexed JSON portfolio with saved beginner, advanced and teaching records, including historical snapshots and practical attempts |
+| GET /api/export | Download the current user's beginner learning record as JSON |
 | GET /api/export?format=csv | Download a spreadsheet-safe CSV learning record |
-| GET /api/health | Check runtime database readiness without revealing user data |
+| GET /api/health | Verify the required application schema and uniqueness constraints. Returns HTTP 503 for a partial migration. |
 
 A new account has no completions or quiz results. Lessons may be previewed freely. Completion requires the preceding lesson and the preceding module's checkpoint. A checkpoint passes at 5/5. Review intervals are 1, 3, 7, 14 and 30 days after successive recalls; a miss schedules another review in one day. Due reviews update in an open tab every 30 seconds and on focus, visibility, and navigation. The app supplies an illustrative self-study schedule, not notifications or automated trading.
 

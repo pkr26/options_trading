@@ -6,9 +6,9 @@ const id=z.number().int().min(1).max(26);
 const numericAnswers=z.record(z.string().max(100),z.number().finite());
 export const tutorInput=z.discriminatedUnion("action",[
   z.object({action:z.literal("start"),moduleId:id.optional()}).strict(),
-  z.object({action:z.literal("answer"),sessionId:uuid,expectedRevision:revision,answer:z.number().finite().min(-1e12).max(1e12)}).strict(),
-  z.object({action:z.literal("hint"),sessionId:uuid,expectedRevision:revision}).strict(),
-  z.object({action:z.literal("explain"),sessionId:uuid,expectedRevision:revision}).strict(),
+  z.object({action:z.literal("answer"),sessionId:uuid,questionPrompt:z.string().max(2000).optional(),expectedRevision:revision,answer:z.number().finite().min(-1e12).max(1e12)}).strict(),
+  z.object({action:z.literal("hint"),sessionId:uuid,questionPrompt:z.string().max(2000).optional(),expectedRevision:revision}).strict(),
+  z.object({action:z.literal("explain"),sessionId:uuid,questionPrompt:z.string().max(2000).optional(),expectedRevision:revision}).strict(),
 ]);
 export const feedbackInput=z.object({submissionId:uuid}).strict();
 export const reviewInput=z.object({

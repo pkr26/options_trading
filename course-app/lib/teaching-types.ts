@@ -1,7 +1,7 @@
 import type { CompetencyId, GraduateAnswer, GraduatePracticeAttempt, GraduatePracticeQuestion, GraduateSubmission } from "./graduate-types";
 
-export type TeachingEvidence = { id: string; kind: "tutor" | "feedback" | "review" | "pilot" | "artifact"; entityId: string; revision: number; payload: unknown; createdAt: string };
-export type TutorRecommendation = { moduleId: number; skill: CompetencyId; reason: string; priority: number; action: "remediate" | "retain" | "prepare" | "extend" };
+export type TeachingEvidence = { id: string; kind: "tutor" | "feedback" | "review" | "pilot" | "artifact" | "practical" | "practical-solutions"; entityId: string; revision: number; payload: unknown; createdAt: string };
+export type TutorRecommendation = { evidenceAt?:string; moduleId: number; skill: CompetencyId; reason: string; priority: number; action: "remediate" | "retain" | "prepare" | "extend" };
 export type TutorPlan = { generatedAt: string; recommendations: TutorRecommendation[]; summary: string };
 export type TutorTurn = { prompt: string; answer: number; correct: boolean; assisted: boolean; explanation: string; expected: number; at: string };
 export type TutorSession = {
@@ -19,5 +19,5 @@ export type PilotEnrollment = { id: string; moduleIds: number[]; version: string
 export type PilotView = { enrollment: PilotEnrollment | null; revision: number; schedule: { stage: PilotStage; dueAt: string | null; status: "available" | "scheduled" | "completed" | "awaiting_baseline" | "missed" }[]; questions?: GraduatePracticeQuestion[]; stage?: PilotStage };
 export type TeachingState = { events: TeachingEvidence[]; plan: TutorPlan; pilot: PilotView };
 export type TeachingContext = { submissions: GraduateSubmission[]; practice: GraduatePracticeAttempt[]; feedback?: WritingFeedback[] };
-export type TutorTransitionInput = { action: "answer" | "hint" | "explain"; answer?: number };
+export type TutorTransitionInput = { action: "answer" | "hint" | "explain"; answer?: number; questionPrompt?: string };
 export type EvaluateWriting = (moduleId: number, answers: GraduateAnswer, submissionId?: string, now?: string) => WritingFeedback;

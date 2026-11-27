@@ -37,3 +37,26 @@ test('a frozen pilot rejects unsupported question versions and changed blueprint
  assert.equal(done.results[0].confidence,40);assert.equal(done.results[0].assistance,'notes');
  assert.throws(()=>freezePilotBlueprint(done),/cannot be refrozen/);
 });
+
+test('a previously frozen portfolio-risk form keeps its original items and grading',()=>{
+  const old={id:'legacy',moduleIds:[4,10,24],version:'v1',enrolledAt:'2026-01-01T00:00:00.000Z',
+    baselineAt:null,seed:1,results:[],questionVersion:'2026-11-14.2',blueprintSignature:'fnv1a-37b2e6fb'};
+  const questions=pilotQuestions(old,'baseline',old.enrolledAt);
+  const delta=questions.find(q=>q.id==='g24-s1-q1');
+  assert.ok(delta);
+  const enrolled=completePilot(old,'baseline',{...answerSet(questions),[delta.id]:100},10,4,old.enrolledAt);
+  assert.equal(enrolled.results[0].feedback.find(item=>item.id===delta.id).correct,true);
+  const fresh=freezePilotBlueprint({...old,results:[]});
+  assert.notEqual(fresh.blueprintSignature,old.blueprintSignature);
+});
+
+test("the November 27 portfolio release retains its original three-stage M7/M11/M24 blueprint",()=>{
+  let prior={...enrollment,moduleIds:[7,11,24],seed:1,questionVersion:"2026-11-27.1",blueprintSignature:"fnv1a-d8da1bcb"};
+  for(const [stage,when] of [["baseline","2026-01-01T12:00:00Z"],["day7","2026-01-08T12:00:00Z"],["day30","2026-01-31T12:00:00Z"]]){
+    const questions=pilotQuestions(prior,stage,when);
+    assert.match(questions[0].id,/^g7-s/);
+    assert.match(questions[6].id,/^g24v2-s/);
+    prior=completePilot(prior,stage,answerSet(questions),5,3,when);
+  }
+  assert.equal(prior.results.length,3);
+});
